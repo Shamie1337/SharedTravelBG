@@ -1,0 +1,35 @@
+﻿@model SharedTravelBG.Models.RentedVehicle
+
+@{
+    ViewData["Title"] = "Rental Details";
+}
+
+<h1>Rental Details</h1>
+
+<div>
+    <h4>Rental Information</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">Vehicle Model</dt>
+        <dd class="col-sm-10">@Model.VehicleModel</dd>
+
+        <dt class="col-sm-2">Renter Phone Number</dt>
+        <dd class="col-sm-10">@Model.RenterPhoneNumber</dd>
+
+        <dt class="col-sm-2">Price Per Day</dt>
+        <dd class="col-sm-10">@Model.PricePerDay.ToString("C")</dd>
+
+        <dt class="col-sm-2">License Plate Number</dt>
+        <dd class="col-sm-10">@Model.LicensePlateNumber</dd>
+
+        <dt class="col-sm-2">Color</dt>
+        <dd class="col-sm-10">@Model.Color</dd>
+
+        <dt class="col-sm-2">Description</dt>
+        <dd class="col-sm-10">@Model.Description</dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
+    <a asp-action="Index">Back to Rentals List</a>
+</div>

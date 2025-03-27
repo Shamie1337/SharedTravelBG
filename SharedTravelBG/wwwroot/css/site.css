@@ -1,0 +1,35 @@
+/* wwwroot/css/site.css */
+
+/* General Body Styling */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header & Navbar Styling */
+header nav.navbar {
+    margin-bottom: 20px;
+}
+
+/* Container adjustments */
+.container {
+    max-width: 960px;
+}
+
+/* Headings */
+h1, h2, h3 {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* Footer Styling */
+footer {
+    background-color: #e9ecef;
+}
+
+/* Additional spacing for forms */
+.form-group {
+    margin-bottom: 15px;
+}

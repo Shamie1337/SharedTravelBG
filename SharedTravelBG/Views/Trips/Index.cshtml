@@ -1,0 +1,29 @@
+﻿@model IEnumerable<SharedTravelBG.Models.Trip>
+
+@{
+    ViewData["Title"] = "Trips";
+}
+
+<h1>Trips</h1>
+
+<p>This is the Index view for Trips.</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Departure</th>
+            <th>Destination</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var trip in Model)
+        {
+            <tr>
+                <td>@trip.DepartureTown</td>
+                <td>@trip.DestinationTown</td>
+                <td>@trip.TripDate.ToShortDateString()</td>
+            </tr>
+        }
+    </tbody>
+</table>

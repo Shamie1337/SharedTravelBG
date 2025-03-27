@@ -1,0 +1,42 @@
+﻿@model IEnumerable<SharedTravelBG.Models.RentedVehicle>
+
+@{
+    ViewData["Title"] = "Rentals";
+}
+
+<h1>Rentals</h1>
+
+<p>
+    <a class="btn btn-primary" asp-action="Create">Add New Rental Vehicle</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Vehicle Model</th>
+            <th>Renter Phone</th>
+            <th>Price Per Day</th>
+            <th>License Plate</th>
+            <th>Color</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var rental in Model)
+        {
+            <tr>
+                <td>@rental.VehicleModel</td>
+                <td>@rental.RenterPhoneNumber</td>
+                <td>@rental.PricePerDay.ToString("C")</td>
+                <td>@rental.LicensePlateNumber</td>
+                <td>@rental.Color</td>
+                <td>@rental.Description</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@rental.Id">Edit</a> |
+                    <a asp-action="Delete" asp-route-id="@rental.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

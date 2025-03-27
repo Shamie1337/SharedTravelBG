@@ -1,0 +1,40 @@
+﻿@model IEnumerable<SharedTravelBG.Models.Vehicle>
+
+@{
+    ViewData["Title"] = "Vehicles";
+}
+
+<h1>Vehicles</h1>
+
+<p>
+    <a class="btn btn-primary" asp-action="Create">Add New Vehicle</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Make</th>
+            <th>Model</th>
+            <th>Year</th>
+            <th>Color</th>
+            <th>Owner</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Make</td>
+                <td>@item.Model</td>
+                <td>@item.Year</td>
+                <td>@item.Color</td>
+                <td>@item.Owner?.UserName</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

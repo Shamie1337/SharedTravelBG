@@ -1,0 +1,44 @@
+﻿@model IEnumerable<SharedTravelBG.Models.RentingCompany>
+
+@{
+    ViewData["Title"] = "Renting Companies";
+}
+
+<h1>Renting Companies</h1>
+
+<!-- Only show the Add button if the user is logged in and is in the Admin role -->
+@if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+{
+    <p>
+        <a class="btn btn-primary" asp-action="Create">Add New Renting Company</a>
+    </p>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Address</th>
+            <th>Phone Number</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var company in Model)
+        {
+            <tr>
+                <td>@company.Name</td>
+                <td>@company.Address</td>
+                <td>@company.PhoneNumber</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@company.Id">Details</a>
+                    @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                    {
+                     < a asp - action = "Edit" asp - route - id = "@company.Id" > Edit </ a >
+                     < a asp - action = "Delete" asp - route - id = "@company.Id" > Delete </ a >
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
