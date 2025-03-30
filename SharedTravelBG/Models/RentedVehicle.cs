@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace SharedTravelBG.Models
 {
@@ -7,18 +9,20 @@ namespace SharedTravelBG.Models
 	{
 		public int Id { get; set; }
 
-		// Removed VehicleId, RentalDate, and ReturnDate
+		// Mark as nullable so that validation does not require a value from the form.
+		[BindNever]
+		public string? RenterId { get; set; }
 
-		public string RenterId { get; set; }
-		public ApplicationUser Renter { get; set; }
+		[ValidateNever]
+		public ApplicationUser? Renter { get; set; }
 
 		[Required]
 		[Display(Name = "Vehicle Model")]
-		public string VehicleModel { get; set; }
+		public string VehicleModel { get; set; } = string.Empty;
 
 		[Required]
 		[Display(Name = "Renter Phone Number")]
-		public string RenterPhoneNumber { get; set; }
+		public string RenterPhoneNumber { get; set; } = string.Empty;
 
 		[Required]
 		[Display(Name = "Price Per Day")]
@@ -26,14 +30,14 @@ namespace SharedTravelBG.Models
 		public decimal PricePerDay { get; set; }
 
 		[Display(Name = "Description")]
-		public string Description { get; set; }
+		public string? Description { get; set; }
 
 		[Required]
 		[Display(Name = "License Plate Number")]
-		public string LicensePlateNumber { get; set; }
+		public string LicensePlateNumber { get; set; } = string.Empty;
 
 		[Required]
 		[Display(Name = "Color")]
-		public string Color { get; set; }
+		public string Color { get; set; } = string.Empty;
 	}
 }
