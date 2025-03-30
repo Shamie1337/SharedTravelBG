@@ -1,0 +1,11 @@
+﻿@model SharedTravelBG.Models.ApplicationUser
+
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<h1>@Model.UserName's Profile</h1>
+
+<p><strong>Full Name:</strong> @Model.FullName</p>
+<p><strong>Email:</strong> @Model.Email</p>
+<p><strong>Average Organiser Rating:</strong> @ViewBag.AverageRating (from @ViewBag.ReviewCount reviews)</p>
