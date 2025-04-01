@@ -2,28 +2,71 @@
 
 @{
     ViewData["Title"] = "Trips";
+    // Get the current logged-in user's ID.
+    string currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 }
 
 <h1>Trips</h1>
 
-<p>This is the Index view for Trips.</p>
+<p>
+    <a class="btn btn-primary" asp-action="Create">Add New Trip</a>
+</p>
 
-<table class="table">
+<table class="table table-bordered">
     <thead>
         <tr>
             <th>Departure</th>
             <th>Destination</th>
             <th>Date</th>
+            <th>Start Time</th>
+            <th>Phone</th>
+            <th>Available Spots</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var trip in Model)
         {
+            // Calculate available spots.
+            int availableSpots = trip.MaxParticipants - (trip.Participants?.Count ?? 0);
+            bool isOrganizer = (trip.OrganizerId == currentUserId);
+            bool isParticipant = trip.Participants != null && trip.Participants.Any(p => p.Id == currentUserId);
             <tr>
                 <td>@trip.DepartureTown</td>
                 <td>@trip.DestinationTown</td>
                 <td>@trip.TripDate.ToShortDateString()</td>
-            </tr>
+                <td>@trip.PlannedStartTime.ToString(@"hh\:mm")</td>
+                <td>@trip.OrganizerPhoneNumber</td>
+                <td>@availableSpots</td>
+                <td>
+                    <!-- Details button is always visible -->
+                    <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@trip.Id">Details</a>
+                    @if (isOrganizer)
+                    {
+                     <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@trip.Id">Edit</a>
+                    <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@trip.Id">Delete</a>
+    }
+                    else
+                    {
+                    if (isParticipant)
+                    {
+                     <form asp-action="Leave" method="post" class="d-inline">
+                    <input type = "hidden" name="id" value="@trip.Id" />
+                    @Html.AntiForgeryToken()
+                    <button type = "submit" class="btn btn-warning btn-sm">Leave</button>
+                    </form>
+                    }
+                    else
+{
+                     <form asp-action = "Join" method = "post" class= "d-inline" >
+                    <input type="hidden" name="id" value="@trip.Id" />
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class= "btn btn-success btn-sm" > Join </button >
+                    </form >
+                    }
+                    }
+            </td>
+        </tr>
         }
     </tbody>
 </table>

@@ -17,25 +17,55 @@ namespace SharedTravelBG.Controllers
 		// GET: Trips
 		public async Task<IActionResult> Index()
 		{
-			var trips = await _context.Trips.Include(t => t.Organizer).ToListAsync();
+			// Include the Participants navigation property so that each trip's list is populated.
+			var trips = await _context.Trips
+									  .Include(t => t.Participants)
+									  .ToListAsync();
 			return View(trips);
 		}
 
-		// GET: Trips/Details/5
 		public async Task<IActionResult> Details(int? id)
 		{
 			if (id == null)
+			{
 				return NotFound();
+			}
 
 			var trip = await _context.Trips
 				.Include(t => t.Organizer)
 				.Include(t => t.Participants)
-				.FirstOrDefaultAsync(m => m.Id == id);
+				.FirstOrDefaultAsync(t => t.Id == id);
 			if (trip == null)
+			{
 				return NotFound();
+			}
+
+			// Calculate available spots.
+			int availableSpots = trip.MaxParticipants - (trip.Participants?.Count ?? 0);
+
+			// Compute organiser's overall rating:
+			// 1. Get all trips organized by this organiser.
+			var organiserTripIds = await _context.Trips
+				.Where(t => t.OrganizerId == trip.OrganizerId)
+				.Select(t => t.Id)
+				.ToListAsync();
+
+			// 2. Get all reviews for those trips.
+			var organiserReviews = await _context.Reviews
+				.Where(r => organiserTripIds.Contains(r.TripId))
+				.ToListAsync();
+
+			// 3. Compute average rating (if there are any reviews)
+			double averageRating = organiserReviews.Any() ? organiserReviews.Average(r => r.Rating) : 0;
+
+			// Pass the computed values to the view via ViewBag.
+			ViewBag.AvailableSpots = availableSpots;
+			ViewBag.OrganiserRating = averageRating;
+			ViewBag.ReviewCount = organiserReviews.Count;
 
 			return View(trip);
 		}
+
 
 		// GET: Trips/Create
 		public IActionResult Create()
@@ -46,11 +76,29 @@ namespace SharedTravelBG.Controllers
 		// POST: Trips/Create
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create([Bind("DepartureTown,DestinationTown,TripDate")] Trip trip)
+		public async Task<IActionResult> Create([Bind("DepartureTown,DestinationTown,TripDate,MaxParticipants,OrganizerPhoneNumber,PlannedStartTime")] Trip trip)
 		{
+
+			if (!ModelState.IsValid)
+			{
+				// Loop through all keys in ModelState and print out errors.
+				foreach (var key in ModelState.Keys)
+				{
+					foreach (var error in ModelState[key].Errors)
+					{
+						// Output the error message to the Debug console.
+						System.Diagnostics.Debug.WriteLine($"Field: {key} Error: {error.ErrorMessage}");
+						// Alternatively, you could use Console.WriteLine if running in an environment where console output is visible.
+						Console.WriteLine($"Field: {key} Error: {error.ErrorMessage}");
+					}
+				}
+				// Optionally, add a breakpoint here to inspect ModelState in the debugger.
+				return View(trip);
+			}
+
 			if (ModelState.IsValid)
 			{
-				// Set the organizer as the current logged in user
+				// Set OrganizerId using the current logged-in user's Id.
 				trip.OrganizerId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 				_context.Add(trip);
 				await _context.SaveChangesAsync();
@@ -58,6 +106,7 @@ namespace SharedTravelBG.Controllers
 			}
 			return View(trip);
 		}
+
 
 		// GET: Trips/Edit/5
 		public async Task<IActionResult> Edit(int? id)
@@ -74,29 +123,41 @@ namespace SharedTravelBG.Controllers
 		// POST: Trips/Edit/5
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Edit(int id, [Bind("Id,DepartureTown,DestinationTown,TripDate")] Trip trip)
+		public async Task<IActionResult> Edit(int id, [Bind("Id,DepartureTown,DestinationTown,TripDate,MaxParticipants,OrganizerPhoneNumber,PlannedStartTime")] Trip trip)
 		{
 			if (id != trip.Id)
+			{
 				return NotFound();
+			}
 
 			if (ModelState.IsValid)
 			{
 				try
 				{
+					// Preserve OrganizerId from the original trip
+					var original = await _context.Trips.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
+					if (original != null)
+						trip.OrganizerId = original.OrganizerId;
+
 					_context.Update(trip);
 					await _context.SaveChangesAsync();
 				}
 				catch (DbUpdateConcurrencyException)
 				{
-					if (!_context.Trips.Any(e => e.Id == trip.Id))
+					if (!_context.Trips.Any(e => e.Id == id))
+					{
 						return NotFound();
+					}
 					else
+					{
 						throw;
+					}
 				}
 				return RedirectToAction(nameof(Index));
 			}
 			return View(trip);
 		}
+
 
 		// GET: Trips/Delete/5
 		public async Task<IActionResult> Delete(int? id)
@@ -121,6 +182,84 @@ namespace SharedTravelBG.Controllers
 			var trip = await _context.Trips.FindAsync(id);
 			_context.Trips.Remove(trip);
 			await _context.SaveChangesAsync();
+			return RedirectToAction(nameof(Index));
+		}
+
+
+
+		// POST: Trips/Join/5
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Join(int id)
+		{
+			// Retrieve the trip including its Participants collection.
+			var trip = await _context.Trips
+									 .Include(t => t.Participants)
+									 .FirstOrDefaultAsync(t => t.Id == id);
+			if (trip == null)
+			{
+				return NotFound();
+			}
+
+			// Get the current user's ID.
+			string currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+			if (string.IsNullOrEmpty(currentUserId))
+			{
+				return Forbid();
+			}
+
+			// If the user is not already a participant, add them (if there's space).
+			if (!trip.Participants.Any(p => p.Id == currentUserId))
+			{
+				if (trip.Participants.Count < trip.MaxParticipants)
+				{
+					var user = await _context.Users.FindAsync(currentUserId);
+					if (user != null)
+					{
+						trip.Participants.Add(user);
+						await _context.SaveChangesAsync();
+					}
+				}
+				else
+				{
+					TempData["Message"] = "Sorry, this trip is full.";
+				}
+			}
+
+			// Redirect back to the Index page so the updated status is visible.
+			return RedirectToAction(nameof(Index));
+		}
+
+		// POST: Trips/Leave/5
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Leave(int id)
+		{
+			// Retrieve the trip including its participants.
+			var trip = await _context.Trips
+				.Include(t => t.Participants)
+				.FirstOrDefaultAsync(t => t.Id == id);
+			if (trip == null)
+			{
+				return NotFound();
+			}
+
+			// Get the current user's ID.
+			string currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+			if (string.IsNullOrEmpty(currentUserId))
+			{
+				return Forbid();
+			}
+
+			// Find the current user in the trip's participants.
+			var user = trip.Participants.FirstOrDefault(p => p.Id == currentUserId);
+			if (user != null)
+			{
+				trip.Participants.Remove(user);
+				await _context.SaveChangesAsync();
+			}
+
+			
 			return RedirectToAction(nameof(Index));
 		}
 	}
