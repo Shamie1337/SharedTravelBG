@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SharedTravelBG.Models;
 
@@ -11,9 +12,10 @@ using SharedTravelBG.Models;
 namespace SharedTravelBG.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250330165837_IThinkThisIsTheFinalUpdateForThisDataModel")]
+    partial class IThinkThisIsTheFinalUpdateForThisDataModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -365,8 +367,8 @@ namespace SharedTravelBG.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<TimeSpan>("PlannedStartTime")
-                        .HasColumnType("time");
+                    b.Property<DateTime>("PlannedStartTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("TripDate")
                         .HasColumnType("datetime2");
