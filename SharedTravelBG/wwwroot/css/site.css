@@ -1,35 +1,26 @@
-/* wwwroot/css/site.css */
-
-/* General Body Styling */
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa;
-    margin: 0;
-    padding: 0;
+/* Override Bootstrap's .bg-primary class with a dark-green background */
+.my-5 {
+    margin-top: 0 !important;
 }
 
-/* Header & Navbar Styling */
-header nav.navbar {
-    margin-bottom: 20px;
+.bg-primary {
+    background-color: #2A5934 !important; /* dark green */
 }
 
-/* Container adjustments */
-.container {
-    max-width: 960px;
+/* Primary buttons styled to match the dark-green theme */
+.btn-primary {
+    background-color: #2A5934 !important;
+    border-color: #2A5934 !important;
+    color: #fff;
 }
 
-/* Headings */
-h1, h2, h3 {
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
+    .btn-primary:hover, .btn-primary:focus {
+        background-color: #254f2b !important; /* slightly darker for hover */
+        border-color: #254f2b !important;
+        color: #fff;
+    }
 
-/* Footer Styling */
-footer {
-    background-color: #e9ecef;
-}
 
-/* Additional spacing for forms */
-.form-group {
-    margin-bottom: 15px;
+.img-fluid{
+    height: 300px;
 }

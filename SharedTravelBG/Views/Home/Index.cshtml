@@ -1,8 +1,68 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Начало";
+    var isAuthenticated = User.Identity.IsAuthenticated;
+    <link rel="stylesheet" href="~/css/site.css" />
+
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- Hero Section -->
+<div class="jumbotron text-center" style="background: url('/images/hero-bg.jpg') no-repeat center center; background-size: cover; padding: 30px 10px; color: black;">
+    <h1 class="display-4">Добре дошли в SharedTravelBG</h1>
+    <p class="lead">Присъединете се, споделяйте и спестете разходи за гориво, докато пътувате из България.</p>
+    <hr class="my-4" style="border-top: 2px solid rgba(0,0,0,0.3);">
+    
 </div>
+
+<!-- Features Section -->
+<div class="container my-5">
+    <div class="row">
+        <!-- Feature 1: Организирайте пътувания -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <img src="/images/map.png" class="img-fluid" alt="Организирайте пътувания">
+                <div class="card-body">
+                    <h5 class="card-title">Организирайте пътувания</h5>
+                    <p class="card-text">Създавайте и управлявайте споделените си пътувания лесно. Планирайте маршрута, задайте налични места и споделяйте своето пътешествие.</p>
+                    <a href="@Url.Action("Create", "Trips")" class="btn btn-outline-primary">Организирайте сега</a>
+                </div>
+            </div>
+        </div>
+        <!-- Feature 2: Присъединете се към пътувания -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <img src="/images/people.jpeg" class="img-fluid" alt="Присъединете се към пътувания">
+                <div class="card-body">
+                    <h5 class="card-title">Присъединете се към пътувания</h5>
+                    <p class="card-text">Намерете пътувания, присъединете се към налични возения и спестете разходи за гориво, докато срещате нови хора.</p>
+                    <a href="@Url.Action("Index", "Trips")" class="btn btn-outline-primary">Намерете пътуване</a>
+                </div>
+            </div>
+        </div>
+        <!-- Feature 3: Споделете своя опит -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <img src="/images/review2.jpg" class="img-fluid" alt="Споделете своя опит">
+                <div class="card-body">
+                    <h5 class="card-title">Споделете своя опит</h5>
+                    <p class="card-text">Оставете отзиви и оценявайте организаторите на пътувания, за да помогнете на другите да избират най-добрите опции.</p>
+                    <a href="@Url.Action("Index", "Reviews")" class="btn btn-outline-primary">Прочетете отзиви</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Register Button Section (only for unauthenticated users) -->
+@if (!isAuthenticated)
+{
+    <div class="container my-5 text-center">
+        <a class="btn btn-success btn-lg" href="/Identity/Account/Register" role="button">Регистрирай се сега</a>
+    </div>
+}
+
+<!-- Footer -->
+<footer class="footer mt-auto py-3 bg-light">
+    <div class="container text-center">
+        <span class="text-muted">&copy; @DateTime.Now.Year - SharedTravelBG</span>
+    </div>
+</footer>
