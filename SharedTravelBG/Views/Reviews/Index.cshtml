@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Reviews";
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 }
 
 <h1>Reviews</h1>
@@ -9,32 +10,46 @@
 <p>
     <a class="btn btn-primary" asp-action="Create">Add New Review</a>
 </p>
+
 <table class="table">
     <thead>
         <tr>
+            <th>Trip</th>
             <th>Content</th>
             <th>Rating</th>
-            <th>Reviewer</th>
-            <th>Trip (optional)</th>
-            <th></th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var review in Model)
         {
             <tr>
+                <td>
+                    @if (review.Trip != null)
+                    {
+                        @($"{review.Trip.DepartureTown} to {review.Trip.DestinationTown}")
+                    }
+                    else
+                    {
+                        <span>N/A</span>
+                    }
+                </td>
                 <td>@review.Content</td>
                 <td>@review.Rating</td>
-                <td>@review.Reviewer?.UserName</td>
                 <td>
-                    @(review.Trip != null ? $"{review.Trip.DepartureTown} to {review.Trip.DestinationTown}" : "N/A")
-                </td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@review.Id">Details</a> |
-                    <a asp-action="Edit" asp-route-id="@review.Id">Edit</a> |
-                    <a asp-action="Delete" asp-route-id="@review.Id">Delete</a>
-                </td>
-            </tr>
-        }
+                    <a asp-action="Details" asp-route-id="@review.Id">Details</a>
+                    @if (review.ReviewerId == currentUserId || User.IsInRole("Admin"))
+                    {
+                     <a asp-action = "Edit" asp-route-id = "@review.Id" > Edit </a>
+                    
+                    <form asp-action = "Delete" method = "post" class="d-inline">
+                    <input type = "hidden" name="id" value="@review.Id" />
+                    @Html.AntiForgeryToken()
+                    <button type = "submit" class="btn btn-link">Delete</button>
+                    </form>
+                    }
+            </td>
+        </tr>
+}
     </tbody>
 </table>

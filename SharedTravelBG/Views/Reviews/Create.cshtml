@@ -1,31 +1,39 @@
 ﻿@model SharedTravelBG.Models.Review
+@using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
-    ViewData["Title"] = "Create Review";
+    ViewData["Title"] = "Add New Review";
 }
 
-<h1>Create Review</h1>
+<h1>Add New Review</h1>
 
 <form asp-action="Create" method="post">
     <div class="form-group">
+        <label asp-for="TripId" class="control-label">Trip</label>
+        <select asp-for="TripId" class="form-control" asp-items="ViewBag.Trips">
+            <option value="">-- Select Trip --</option>
+        </select>
+        <span asp-validation-for="TripId" class="text-danger"></span>
+    </div>
+    <div class="form-group">
         <label asp-for="Content" class="control-label"></label>
-        <textarea asp-for="Content" class="form-control"></textarea>
+        <textarea asp-for="Content" class="form-control" placeholder="Enter your review"></textarea>
         <span asp-validation-for="Content" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="Rating" class="control-label"></label>
-        <input asp-for="Rating" class="form-control" />
+        <input asp-for="Rating" class="form-control" type="number" min="1" max="5" placeholder="Enter rating (1-5)" />
         <span asp-validation-for="Rating" class="text-danger"></span>
     </div>
-    <div class="form-group">
-        <label asp-for="TripId" class="control-label">Trip (optional)</label>
-        <input asp-for="TripId" class="form-control" />
-        <span asp-validation-for="TripId" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <input type="submit" value="Create" class="btn btn-primary" />
-    </div>
+    <button type="submit" class="btn btn-primary">Add Review</button>
 </form>
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+
+<p>
+    <a class="btn btn-secondary" asp-action="Index">Back to Reviews List</a>
+</p>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

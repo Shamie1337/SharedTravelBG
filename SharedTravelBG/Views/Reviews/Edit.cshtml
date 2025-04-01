@@ -1,37 +1,40 @@
-﻿@model SharedTravelBG.Models.Vehicle
+﻿@model SharedTravelBG.Models.Review
+@using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
-    ViewData["Title"] = "Edit Vehicle";
+    ViewData["Title"] = "Edit Review";
 }
 
-<h1>Edit Vehicle</h1>
+<h1>Edit Review</h1>
 
 <form asp-action="Edit" method="post">
     <input type="hidden" asp-for="Id" />
     <div class="form-group">
-        <label asp-for="Make" class="control-label"></label>
-        <input asp-for="Make" class="form-control" />
-        <span asp-validation-for="Make" class="text-danger"></span>
+        <label asp-for="TripId" class="control-label">Trip</label>
+        <select asp-for="TripId" class="form-control" asp-items="ViewBag.Trips">
+            <option value="">-- Select Trip --</option>
+        </select>
+        <span asp-validation-for="TripId" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="Model" class="control-label"></label>
-        <input asp-for="Model" class="form-control" />
-        <span asp-validation-for="Model" class="text-danger"></span>
+        <label asp-for="Content" class="control-label"></label>
+        <textarea asp-for="Content" class="form-control"></textarea>
+        <span asp-validation-for="Content" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="Year" class="control-label"></label>
-        <input asp-for="Year" class="form-control" />
-        <span asp-validation-for="Year" class="text-danger"></span>
+        <label asp-for="Rating" class="control-label"></label>
+        <input asp-for="Rating" class="form-control" type="number" min="1" max="5" />
+        <span asp-validation-for="Rating" class="text-danger"></span>
     </div>
-    <div class="form-group">
-        <label asp-for="Color" class="control-label"></label>
-        <input asp-for="Color" class="form-control" />
-        <span asp-validation-for="Color" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <input type="submit" value="Save" class="btn btn-primary" />
-    </div>
+    <button type="submit" class="btn btn-primary">Save Changes</button>
 </form>
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+
+<p>
+    <a class="btn btn-secondary" asp-action="Index">Back to Reviews List</a>
+</p>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
