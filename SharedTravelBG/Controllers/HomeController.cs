@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SharedTravelBG.Models;
 
 namespace SharedTravelBG.Controllers
@@ -9,10 +11,12 @@ namespace SharedTravelBG.Controllers
     {
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
-        {
-            _logger = logger;
-        }
+		private readonly ApplicationDbContext _context;
+		public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
+		{
+			_logger = logger;
+			_context = context;
+		}
 
 		[AllowAnonymous]
 		public IActionResult Index()
@@ -31,5 +35,42 @@ namespace SharedTravelBG.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-    }
+
+		public async Task<IActionResult> Profile()
+		{
+			// Get the current user's Id from claims.
+			string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			if (string.IsNullOrEmpty(userId))
+			{
+				// If not logged in, redirect to the Register page.
+				return RedirectToAction("Register", "Account", new { area = "Identity" });
+			}
+
+			// Retrieve the user (organiser) from the Identity table.
+			var user = await _context.Users.FindAsync(userId);
+			if (user == null)
+			{
+				return NotFound();
+			}
+
+			// Get the IDs of trips organized by this user.
+			var tripIds = await _context.Trips
+				.Where(t => t.OrganizerId == userId)
+				.Select(t => t.Id)
+			.ToListAsync();
+
+			// Get reviews for those trips.
+			var reviews = await _context.Reviews
+				.Where(r => tripIds.Contains(r.TripId))
+				.ToListAsync();
+
+			// Compute the average rating.
+			double averageRating = reviews.Any() ? reviews.Average(r => r.Rating) : 0;
+			ViewBag.AverageRating = averageRating;
+			ViewBag.ReviewCount = reviews.Count;
+
+			return View(user);
+		}
+
+	}
 }
