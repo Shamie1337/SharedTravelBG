@@ -20,6 +20,45 @@ namespace SharedTravelBG.Models
 		{
 			base.OnModelCreating(modelBuilder);
 
+			// Seed RentingCompanies data.
+			modelBuilder.Entity<RentingCompany>().HasData(
+				new RentingCompany
+				{
+					Id = 1,
+					Name = "Europcar Bulgaria",
+					Address = "16 Tsar Osvoboditel Blvd, Sofia 1000, Bulgaria",
+					PhoneNumber = "+359 2 123 4567"
+				},
+				new RentingCompany
+				{
+					Id = 3,
+					Name = "Sixt Bulgaria",
+					Address = "27 Vitosha Blvd, Sofia 1000, Bulgaria",
+					PhoneNumber = "+359 2 234 5678"
+				},
+				new RentingCompany
+				{
+					Id = 4,
+					Name = "Avis Bulgaria",
+					Address = "5 Vasil Levski Blvd, Plovdiv 4000, Bulgaria",
+					PhoneNumber = "+359 32 123 456"
+				},
+				new RentingCompany
+				{
+					Id = 5,
+					Name = "Budget Bulgaria",
+					Address = "2 Maritime Blvd, Varna 9000, Bulgaria",
+					PhoneNumber = "+359 52 765 432"
+				},
+				new RentingCompany
+				{
+					Id = 6,
+					Name = "OK Rent a Car",
+					Address = "10 Georgi Kirkov Blvd, Burgas 8000, Bulgaria",
+					PhoneNumber = "+359 56 987 654"
+				}
+			);
+
 			// Configure one-to-many: One ApplicationUser organizes many Trips
 			modelBuilder.Entity<Trip>()
 				.HasOne(t => t.Organizer)
