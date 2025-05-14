@@ -6,6 +6,10 @@
 
 <h2>My Profile</h2>
 
+<div class="d-flex justify-content-end mb-3">
+    <a asp-action="Edit" class="btn btn-primary">Edit Profile</a>
+</div>
+
 <div class="card">
     <div class="card-body">
         <p><strong>Username:</strong> @Model.UserName</p>
@@ -17,3 +21,5 @@
         </p>
     </div>
 </div>
+
+
