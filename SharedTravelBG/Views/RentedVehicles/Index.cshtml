@@ -1,7 +1,9 @@
 ﻿@model IEnumerable<SharedTravelBG.Models.RentedVehicle>
 
+
 @{
     ViewData["Title"] = "Rentals";
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 }
 
 <h1>Rentals</h1>
@@ -15,10 +17,9 @@
         <tr>
             <th>Vehicle Model</th>
             <th>Renter Phone</th>
-            <th>Price Per Day</th>
+            <th>Price/Day</th>
             <th>License Plate</th>
             <th>Color</th>
-            <th>Description</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -31,12 +32,21 @@
                 <td>@rental.PricePerDay.ToString("C")</td>
                 <td>@rental.LicensePlateNumber</td>
                 <td>@rental.Color</td>
-                <td>@rental.Description</td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@rental.Id">Edit</a> |
-                    <a asp-action="Delete" asp-route-id="@rental.Id">Delete</a>
-                </td>
-            </tr>
-        }
+                    <!-- Details button is always visible -->
+                    <a asp-action="Details" asp-route-id="@rental.Id">Details</a>
+                    @if (rental.RenterId == currentUserId || User.IsInRole("Admin"))
+                    {
+                     <a asp-action = "Edit" asp-route-id = "@rental.Id" > Edit </a>
+                    
+                    <form asp-action = "Delete" method = "post" class="d-inline">
+                    <input type = "hidden" name="id" value="@rental.Id" />
+                    @Html.AntiForgeryToken()
+                    <button type = "submit" class="btn btn-link">Delete</button>
+                    </form>
+                    }
+            </td>
+        </tr>
+}
     </tbody>
 </table>

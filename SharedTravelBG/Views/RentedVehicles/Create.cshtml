@@ -19,13 +19,8 @@
     </div>
     <div class="form-group">
         <label asp-for="PricePerDay" class="control-label"></label>
-        <input asp-for="PricePerDay" class="form-control" placeholder="Enter price per day" />
+        <input asp-for="PricePerDay" class="form-control" type="number" step="0.01" placeholder="Enter price per day" />
         <span asp-validation-for="PricePerDay" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Description" class="control-label"></label>
-        <textarea asp-for="Description" class="form-control" placeholder="Optional description"></textarea>
-        <span asp-validation-for="Description" class="text-danger"></span>
     </div>
     <div class="form-group">
         <label asp-for="LicensePlateNumber" class="control-label"></label>
@@ -37,9 +32,20 @@
         <input asp-for="Color" class="form-control" placeholder="Enter Car Color" />
         <span asp-validation-for="Color" class="text-danger"></span>
     </div>
+    <div class="form-group">
+        <label asp-for="Description" class="control-label"></label>
+        <textarea asp-for="Description" class="form-control" placeholder="Optional description"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
     <button type="submit" class="btn btn-primary">Add Rental</button>
 </form>
 
 <p>
     <a class="btn btn-secondary" asp-action="Index">Back to Rentals List</a>
 </p>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
