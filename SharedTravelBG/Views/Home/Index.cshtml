@@ -5,13 +5,17 @@
 
 }
 
+
 <!-- Hero Section -->
-<div class="jumbotron text-center" style="background: url('/images/hero-bg.jpg') no-repeat center center; background-size: cover; padding: 30px 10px; color: black;">
-    <h1 class="display-4">Добре дошли в SharedTravelBG</h1>
-    <p class="lead">Присъединете се, споделяйте и спестете разходи за гориво, докато пътувате из България.</p>
-    <hr class="my-4" style="border-top: 2px solid rgba(0,0,0,0.3);">
-    
-</div>
+@if (!User.Identity.IsAuthenticated)
+{
+    <div class="jumbotron text-center" style="background: url('/images/hero-bg.jpg') no-repeat center center; background-size: cover; padding: 30px 10px; color: black;">
+        <h1 class="display-4">Добре дошли в SharedTravelBG</h1>
+        <p class="lead">Присъединете се, споделяйте и спестете разходи за гориво, докато пътувате из България.</p>
+        <hr class="my-4" style="border-top: 2px solid rgba(0,0,0,0.3);">
+
+    </div>
+}
 
 <!-- Features Section -->
 <div class="container my-5">
@@ -60,9 +64,4 @@
     </div>
 }
 
-<!-- Footer -->
-<footer class="footer mt-auto py-3 bg-light">
-    <div class="container text-center">
-        <span class="text-muted">&copy; @DateTime.Now.Year - SharedTravelBG</span>
-    </div>
-</footer>
+
