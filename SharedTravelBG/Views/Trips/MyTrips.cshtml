@@ -1,0 +1,53 @@
+﻿@model IEnumerable<SharedTravelBG.Models.Trip>
+@{
+    ViewData["Title"] = "My Trips";
+    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (!Model.Any())
+{
+    <p>You haven’t joined any trips yet. <a asp-action="Index">Browse all trips</a>.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Route</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Organizer</th>
+                <th>Spots</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var trip in Model)
+            {
+                var spotsLeft = trip.MaxParticipants - (trip.Participants?.Count ?? 0);
+                <tr>
+                    <td>@trip.DepartureTown → @trip.DestinationTown</td>
+                    <td>@trip.TripDate.ToString("yyyy-MM-dd")</td>
+                    <td>@trip.PlannedStartTime.ToString(@"hh\:mm")</td>
+                    <td>@trip.Organizer.FullName</td>
+                    <td>@spotsLeft</td>
+                    <td>
+                        <a class="btn btn-sm btn-info"
+                           asp-action="Details"
+                           asp-route-id="@trip.Id">Details</a>
+
+                        <form asp-action="Leave" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@trip.Id" />
+                            <button type="submit" class="btn btn-sm btn-warning">
+                                Leave
+                            </button>
+                            @Html.AntiForgeryToken()
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

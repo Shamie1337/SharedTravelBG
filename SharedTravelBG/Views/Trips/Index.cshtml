@@ -12,6 +12,38 @@
     <a class="btn btn-primary" asp-action="Create">Add New Trip</a>
 </p>
 
+<form method="get" class="row g-2 mb-4">
+    <div class="col-sm-2">
+        <input type="text" name="departure" value="@ViewData["departure"]"
+               class="form-control" placeholder="From town…" />
+    </div>
+    <div class="col-sm-2">
+        <input type="text" name="destination" value="@ViewData["destination"]"
+               class="form-control" placeholder="To town…" />
+    </div>
+    <div class="col-sm-2">
+        <input type="date" name="date" value="@ViewData["date"]"
+               class="form-control" />
+    </div>
+    <div class="col-sm-2">
+        <input type="time" name="time" value="@ViewData["time"]"
+               class="form-control" />
+    </div>
+    <div class="col-sm-2">
+        <button type="submit" class="btn btn-primary w-100">Filter</button>
+    </div>
+    <div class="col-sm-2">
+        <a asp-action="Index" class="btn btn-secondary w-100">Reset</a>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-warning">
+        Няма намерени пътувания, които да отговарят на зададените критерии.
+    </div>
+}
+
 <table class="table table-bordered">
     <thead>
         <tr>
@@ -68,5 +100,7 @@
             </td>
         </tr>
         }
+
+       
     </tbody>
 </table>
