@@ -1,23 +1,25 @@
 ﻿@model IEnumerable<SharedTravelBG.Models.Review>
 
 @{
-    ViewData["Title"] = "Reviews";
+    ViewData["Title"] = "Отзиви";
     var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 }
 
-<h1>Reviews</h1>
+<h1>Отзиви</h1>
 
 <p>
-    <a class="btn btn-primary" asp-action="Create">Add New Review</a>
+    <a class="btn btn-primary" asp-action="Create">Добави нов отзив</a>
 </p>
 
-<table class="table">
+<table class="table table-bordered">
     <thead>
         <tr>
-            <th>Trip</th>
-            <th>Content</th>
-            <th>Rating</th>
-            <th>Actions</th>
+            <th>Пътуване</th>
+            <th>Отзив</th>
+            <th>Оценка</th>
+            <th>Организатор</th>
+            <th>Автор</th>
+            <th>Действия</th>
         </tr>
     </thead>
     <tbody>
@@ -27,7 +29,7 @@
                 <td>
                     @if (review.Trip != null)
                     {
-                        @($"{review.Trip.DepartureTown} to {review.Trip.DestinationTown}")
+                        @($"{review.Trip.DepartureTown} до {review.Trip.DestinationTown}")
                     }
                     else
                     {
@@ -37,15 +39,35 @@
                 <td>@review.Content</td>
                 <td>@review.Rating</td>
                 <td>
-                    <a asp-action="Details" asp-route-id="@review.Id">Details</a>
+                    @if (review.Trip != null && review.Trip.Organizer != null)
+                    {
+                        @review.Trip.Organizer.FullName
+                    }
+                    else
+                    {
+                        <span>N/A</span>
+                    }
+                </td>
+                <td>
+                    @if (review.Reviewer != null)
+                    {
+                        @review.Reviewer.FullName
+                    }
+                    else
+                    {
+                        <span>N/A</span>
+                    }
+                </td>
+                <td>
+                    <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@review.Id">Детайли</a>
                     @if (review.ReviewerId == currentUserId || User.IsInRole("Admin"))
                     {
-                     <a asp-action = "Edit" asp-route-id = "@review.Id" > Edit </a>
+                     <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@review.Id">Редактирай</a>
                     
-                    <form asp-action = "Delete" method = "post" class="d-inline">
+                    <form asp-action="Delete" method="post" class="d-inline">
                     <input type = "hidden" name="id" value="@review.Id" />
                     @Html.AntiForgeryToken()
-                    <button type = "submit" class="btn btn-link">Delete</button>
+                    <button type = "submit" class="btn btn-danger btn-sm">Изтрий</button>
                     </form>
                     }
             </td>

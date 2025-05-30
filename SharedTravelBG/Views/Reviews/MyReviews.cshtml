@@ -1,0 +1,40 @@
+﻿@model IEnumerable<SharedTravelBG.Models.Review>
+@{
+    ViewData["Title"] = "My Reviews";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (!Model.Any())
+{
+    <p>You haven’t written any reviews yet. <a asp-action="Create">Write one now.</a></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Trip</th>
+                <th>Rating</th>
+                <th>Comment</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var rev in Model)
+            {
+                <tr>
+                    <td>@rev.Trip.DepartureTown → @rev.Trip.DestinationTown</td>
+                    <td>@rev.Rating</td>
+                    <td>@rev.Content</td>
+                    <td>
+                        <a class="btn btn-sm btn-info"
+                           asp-action="Details"
+                           asp-controller="Trips"
+                           asp-route-id="@rev.TripId">Trip Details</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
