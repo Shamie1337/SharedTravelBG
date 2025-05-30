@@ -18,43 +18,48 @@
 }
 
 <!-- Features Section -->
-<div class="container my-5">
-    <div class="row">
-        <!-- Feature 1: Организирайте пътувания -->
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm h-100">
-                <img src="/images/map.png" class="img-fluid" alt="Организирайте пътувания">
-                <div class="card-body">
-                    <h5 class="card-title">Организирайте пътувания</h5>
-                    <p class="card-text">Създавайте и управлявайте споделените си пътувания лесно. Планирайте маршрута, задайте налични места и споделяйте своето пътешествие.</p>
-                    <a href="@Url.Action("Create", "Trips")" class="btn btn-outline-primary">Организирайте сега</a>
+@if (User.Identity.IsAuthenticated)
+{
+
+
+    <div class="flex-grow-1 d-flex flex-column justify-content-center">
+        <div class="row">
+            <!-- Feature 1: Организирайте пътувания -->
+            <div class="col-md-4 mb-4 mt-5">
+                <div class="card shadow-sm h-100">
+                    <img src="/images/map.png" class="img-fluid" alt="Организирайте пътувания">
+                    <div class="card-body">
+                        <h5 class="card-title">Организирайте пътувания</h5>
+                        <p class="card-text">Създавайте и управлявайте споделените си пътувания лесно. Планирайте маршрута, задайте налични места и споделяйте своето пътешествие.</p>
+                        <a href="@Url.Action("Create", "Trips")" class="btn btn-outline-primary">Организирайте сега</a>
+                    </div>
                 </div>
             </div>
-        </div>
-        <!-- Feature 2: Присъединете се към пътувания -->
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm h-100">
-                <img src="/images/people.jpeg" class="img-fluid" alt="Присъединете се към пътувания">
-                <div class="card-body">
-                    <h5 class="card-title">Присъединете се към пътувания</h5>
-                    <p class="card-text">Намерете пътувания, присъединете се към налични возения и спестете разходи за гориво, докато срещате нови хора.</p>
-                    <a href="@Url.Action("Index", "Trips")" class="btn btn-outline-primary">Намерете пътуване</a>
+            <!-- Feature 2: Присъединете се към пътувания -->
+            <div class="col-md-4 mb-4 mt-5">
+                <div class="card shadow-sm h-100">
+                    <img src="/images/people.jpeg" class="img-fluid" alt="Присъединете се към пътувания">
+                    <div class="card-body">
+                        <h5 class="card-title">Присъединете се към пътувания</h5>
+                        <p class="card-text">Намерете пътувания, присъединете се към налични возения и спестете разходи за гориво, докато срещате нови хора.</p>
+                        <a href="@Url.Action("Index", "Trips")" class="btn btn-outline-primary">Намерете пътуване</a>
+                    </div>
                 </div>
             </div>
-        </div>
-        <!-- Feature 3: Споделете своя опит -->
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm h-100">
-                <img src="/images/review2.jpg" class="img-fluid" alt="Споделете своя опит">
-                <div class="card-body">
-                    <h5 class="card-title">Споделете своя опит</h5>
-                    <p class="card-text">Оставете отзиви и оценявайте организаторите на пътувания, за да помогнете на другите да избират най-добрите опции.</p>
-                    <a href="@Url.Action("Index", "Reviews")" class="btn btn-outline-primary">Прочетете отзиви</a>
+            <!-- Feature 3: Споделете своя опит -->
+            <div class="col-md-4 mb-4 mt-5">
+                <div class="card shadow-sm h-100">
+                    <img src="/images/review2.jpg" class="img-fluid" alt="Споделете своя опит">
+                    <div class="card-body">
+                        <h5 class="card-title">Споделете своя опит</h5>
+                        <p class="card-text">Оставете отзиви и оценявайте организаторите на пътувания, за да помогнете на другите да избират най-добрите опции.</p>
+                        <a href="@Url.Action("Index", "Reviews")" class="btn btn-outline-primary">Прочетете отзиви</a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+}
 
 <!-- Register Button Section (only for unauthenticated users) -->
 @if (!isAuthenticated)

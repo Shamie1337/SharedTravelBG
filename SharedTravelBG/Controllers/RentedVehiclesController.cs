@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SharedTravelBG.Models;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace SharedTravelBG.Controllers
 {
@@ -37,16 +38,117 @@ namespace SharedTravelBG.Controllers
 		{
 			if (ModelState.IsValid)
 			{
-				// Set the current logged-in user as the renter.
+				// Automatically set the RenterId using the current logged-in user.
 				rentedVehicle.RenterId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-				_context.RentedVehicles.Add(rentedVehicle);
+				_context.Add(rentedVehicle);
 				await _context.SaveChangesAsync();
-				// Redirect back to the Rentals Index page.
 				return RedirectToAction(nameof(Index));
 			}
 			return View(rentedVehicle);
 		}
 
-		// (Existing Edit and Delete actions remain unchanged)
+		// GET: RentedVehicles/Edit/5
+		public async Task<IActionResult> Edit(int? id)
+		{
+			if (id == null)
+				return NotFound();
+
+			var rentedVehicle = await _context.RentedVehicles.FindAsync(id);
+			if (rentedVehicle == null)
+				return NotFound();
+
+			string currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			// Allow editing if the current user is the creator or an admin.
+			if (rentedVehicle.RenterId != currentUserId && !User.IsInRole("Admin"))
+				return Forbid();
+
+			return View(rentedVehicle);
+		}
+
+		// POST: RentedVehicles/Edit/5
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Edit(int id, RentedVehicle rentedVehicle)
+		{
+			if (id != rentedVehicle.Id)
+				return NotFound();
+
+			if (ModelState.IsValid)
+			{
+				try
+				{
+					// Preserve the original RenterId
+					var original = await _context.RentedVehicles.AsNoTracking().FirstOrDefaultAsync(rv => rv.Id == id);
+					if (original != null)
+						rentedVehicle.RenterId = original.RenterId;
+
+					_context.Update(rentedVehicle);
+					await _context.SaveChangesAsync();
+				}
+				catch (DbUpdateConcurrencyException)
+				{
+					if (!_context.RentedVehicles.Any(rv => rv.Id == rentedVehicle.Id))
+						return NotFound();
+					else
+						throw;
+				}
+				return RedirectToAction(nameof(Index));
+			}
+			return View(rentedVehicle);
+		}
+
+		// GET: RentedVehicles/Details/5
+		public async Task<IActionResult> Details(int? id)
+		{
+			if (id == null)
+				return NotFound();
+
+			var rentedVehicle = await _context.RentedVehicles
+				.Include(rv => rv.Renter)
+				.FirstOrDefaultAsync(rv => rv.Id == id);
+			if (rentedVehicle == null)
+				return NotFound();
+			return View(rentedVehicle);
+		}
+
+		// GET: RentedVehicles/Delete/5
+		public async Task<IActionResult> Delete(int? id)
+		{
+			if (id == null)
+				return NotFound();
+
+			var rentedVehicle = await _context.RentedVehicles
+				.Include(rv => rv.Renter)
+				.FirstOrDefaultAsync(rv => rv.Id == id);
+			if (rentedVehicle == null)
+				return NotFound();
+
+			string currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			// Allow deletion if the user is the creator or if the user is an admin.
+			if (rentedVehicle.RenterId != currentUserId && !User.IsInRole("Admin"))
+				return Forbid();
+
+			return View(rentedVehicle);
+		}
+
+		// POST: RentedVehicles/Delete/5
+		[HttpPost, ActionName("Delete")]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> DeleteConfirmed(int id)
+		{
+			var rentedVehicle = await _context.RentedVehicles.FindAsync(id);
+			if (rentedVehicle == null)
+				return NotFound();
+
+			string currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			if (rentedVehicle.RenterId != currentUserId && !User.IsInRole("Admin"))
+				return Forbid();
+
+			_context.RentedVehicles.Remove(rentedVehicle);
+			await _context.SaveChangesAsync();
+			return RedirectToAction(nameof(Index));
+		}
+
+		
 	}
 }

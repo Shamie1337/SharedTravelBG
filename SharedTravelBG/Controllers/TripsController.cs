@@ -1,7 +1,9 @@
 ﻿// Controllers/TripsController.cs
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SharedTravelBG.Models;
+using System.Security.Claims;
 
 namespace SharedTravelBG.Controllers
 {
@@ -15,13 +17,38 @@ namespace SharedTravelBG.Controllers
 		}
 
 		// GET: Trips
-		public async Task<IActionResult> Index()
+		public async Task<IActionResult> Index(string? departure,
+		string? destination,
+		DateTime? date,
+		TimeSpan? time )
 		{
 			// Include the Participants navigation property so that each trip's list is populated.
-			var trips = await _context.Trips
-									  .Include(t => t.Participants)
-									  .ToListAsync();
-			return View(trips);
+
+			var trips = _context.Trips
+			.Include(t => t.Organizer)
+			.Include(t => t.Participants)
+			.AsQueryable();
+
+			if (!string.IsNullOrWhiteSpace(departure))
+				trips = trips.Where(t => t.DepartureTown.Contains(departure));
+
+			if (!string.IsNullOrWhiteSpace(destination))
+				trips = trips.Where(t => t.DestinationTown.Contains(destination));
+
+			if (date.HasValue)
+				trips = trips.Where(t => t.TripDate.Date == date.Value.Date);
+
+			if (time.HasValue)
+				trips = trips.Where(t => t.PlannedStartTime == time.Value);
+
+			var result = await trips.ToListAsync();
+
+			ViewData["departure"] = departure ?? "";
+			ViewData["destination"] = destination ?? "";
+			ViewData["date"] = date?.ToString("yyyy-MM-dd") ?? "";
+			ViewData["time"] = time?.ToString(@"hh\:mm") ?? "";
+
+			return View(result);
 		}
 
 		public async Task<IActionResult> Details(int? id)
@@ -228,6 +255,25 @@ namespace SharedTravelBG.Controllers
 
 			// Redirect back to the Index page so the updated status is visible.
 			return RedirectToAction(nameof(Index));
+
+		}
+
+		//Adding the MyTrips
+		public async Task<IActionResult> MyTrips()
+		{
+			// get current user
+			var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			if (string.IsNullOrEmpty(userId))
+				return Challenge(); // or RedirectToAction("Index", "Home");
+
+			// find all trips where this user is a participant
+			var myTrips = await _context.Trips
+				.Include(t => t.Organizer)
+				.Include(t => t.Participants)
+				.Where(t => t.Participants.Any(p => p.Id == userId))
+				.ToListAsync();
+
+			return View(myTrips);
 		}
 
 		// POST: Trips/Leave/5
@@ -262,5 +308,21 @@ namespace SharedTravelBG.Controllers
 			
 			return RedirectToAction(nameof(Index));
 		}
+
+
+		// GET: Trips/MyOrganized
+		[Authorize]
+		public async Task<IActionResult> MyOrganized()
+		{
+			var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			var organized = await _context.Trips
+				.Include(t => t.Organizer)
+				.Where(t => t.OrganizerId == userId)
+				.ToListAsync();
+			return View(organized);
+		}
+
+		
+
 	}
 }

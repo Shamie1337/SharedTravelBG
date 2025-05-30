@@ -19,6 +19,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 	options.LoginPath = "/Identity/Account/Register";
 });
 
+
+
 // Add Identity services with role support.
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
@@ -26,6 +28,10 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 })
 	.AddRoles<IdentityRole>()  // Enable role support
 	.AddEntityFrameworkStores<ApplicationDbContext>();
+
+// Register the custom claims factory
+builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, CustomUserClaimsPrincipalFactory>();
+
 
 // Add controllers with views.
 builder.Services.AddControllersWithViews(options =>
@@ -51,19 +57,20 @@ builder.Services.AddControllersWithViews(options =>
 });
 
 
+builder.Services.AddSignalR();
 
 
 var app = builder.Build();
 
 // (Standard middleware configuration below)
-if (app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment())
 {
-	app.UseMigrationsEndPoint();
+	app.UseExceptionHandler("/Error/500");  // Redirects to /Error/500 for exceptions.
+	app.UseStatusCodePagesWithReExecute("/Error/{0}");  // For non-success status codes (e.g., 404).
 }
 else
 {
-	app.UseExceptionHandler("/Home/Error");
-	app.UseHsts();
+	app.UseDeveloperExceptionPage();
 }
 
 app.UseHttpsRedirection();
@@ -74,9 +81,14 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+
+
 app.MapControllerRoute(
 	name: "default",
 	pattern: "{controller=Home}/{action=Index}/{id?}");
+
+
+
 app.MapRazorPages();
 
 

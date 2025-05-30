@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SharedTravelBG.Controllers
 {
@@ -20,9 +21,14 @@ namespace SharedTravelBG.Controllers
 		// GET: Reviews
 		public async Task<IActionResult> Index()
 		{
-			var reviews = await _context.Reviews.Include(r => r.Reviewer).Include(r => r.Trip).ToListAsync();
+			var reviews = await _context.Reviews
+				.Include(r => r.Reviewer)
+				.Include(r => r.Trip)
+					.ThenInclude(t => t.Organizer)
+				.ToListAsync();
 			return View(reviews);
 		}
+
 
 		// GET: Reviews/Details/5
 		public async Task<IActionResult> Details(int? id)
@@ -54,25 +60,49 @@ namespace SharedTravelBG.Controllers
 			return View();
 		}
 
-		// POST: Reviews/Create
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Create(Review review)
 		{
 			if (ModelState.IsValid)
 			{
-				// Set the ReviewerId from the currently logged-in user.
-				review.ReviewerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-				_context.Add(review);
+				// Retrieve the trip based on review.TripId to check its organiser.
+				var trip = await _context.Trips.FindAsync(review.TripId);
+				string currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+				if (trip != null && trip.OrganizerId == currentUserId)
+				{
+					// Add a model error if the organiser is trying to review their own trip.
+					ModelState.AddModelError("", "You cannot write a review for yourself.");
+
+					// If you are using a dropdown for trips in your Create view, reload it here.
+					var trips = await _context.Trips.ToListAsync();
+					ViewBag.Trips = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
+						trips.Select(t => new
+						{
+							t.Id,
+							Display = $"{t.DepartureTown} to {t.DestinationTown} - {t.TripDate.ToShortDateString()}"
+						}), "Id", "Display");
+
+					return View(review);
+				}
+
+				// Set the reviewer from the current user's ID.
+				review.ReviewerId = currentUserId;
+				//I CHANGED THIS TO CHECK LATER
+				_context.Reviews.Add(review);
 				await _context.SaveChangesAsync();
 				return RedirectToAction(nameof(Index));
 			}
-			// Reload the trips list if ModelState is invalid.
-			var trips = _context.Trips.ToList();
-			ViewBag.Trips = new SelectList(trips.Select(t => new {
-				t.Id,
-				Display = $"{t.DepartureTown} to {t.DestinationTown} on {t.TripDate.ToShortDateString()}"
-			}), "Id", "Display");
+
+			// Reload trips for dropdown in case ModelState is invalid.
+			var allTrips = await _context.Trips.ToListAsync();
+			ViewBag.Trips = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
+				allTrips.Select(t => new
+				{
+					t.Id,
+					Display = $"{t.DepartureTown} to {t.DestinationTown} - {t.TripDate.ToShortDateString()}"
+				}), "Id", "Display");
 			return View(review);
 		}
 
@@ -178,6 +208,17 @@ namespace SharedTravelBG.Controllers
 			_context.Reviews.Remove(review);
 			await _context.SaveChangesAsync();
 			return RedirectToAction(nameof(Index));
+		}
+
+		[Authorize]
+		public async Task<IActionResult> MyReviews()
+		{
+			var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			var myReviews = await _context.Reviews
+				.Include(r => r.Trip)
+				.Where(r => r.ReviewerId == userId)
+				.ToListAsync();
+			return View(myReviews);
 		}
 	}
 }
