@@ -16,9 +16,11 @@ else
             <tr>
                 <th>Route</th>
                 <th>Date</th>
-                <th>Time</th>
-                <th>Participants</th>
                 <th></th>
+                <th>Time</th>
+                <th></th>
+                <th>Participants</th>
+                
             </tr>
         </thead>
         <tbody>
@@ -26,9 +28,12 @@ else
             {
                 <tr>
                     <td>@trip.DepartureTown → @trip.DestinationTown</td>
-                    <td>@trip.TripDate:yyyy-MM-dd</td>
-                    <td>@trip.PlannedStartTime:hh\\:mm</td>
+                    <td>@trip.TripDate.Date.ToString("MM/dd/yy")<td>      
+                    <td>@trip.PlannedStartTime.ToString(@"hh\:mm")<td>
                     <td>@(trip.Participants?.Count ?? 0) / @trip.MaxParticipants</td>
+
+
+
                     <td>
                         <a class="btn btn-sm btn-info" asp-action="Details" asp-route-id="@trip.Id">Details</a>
                         <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-id="@trip.Id">Edit</a>
