@@ -47,15 +47,26 @@ namespace SharedTravelBG.Controllers
 		}
 
 		// GET: Reviews/Create
-		public IActionResult Create()
+		// GET: Reviews/Create
+		public async Task<IActionResult> Create()
 		{
-			// Load all trips; you might choose to filter these (e.g., only trips the user has participated in)
-			var trips = _context.Trips.ToList();
-			// Create a SelectList showing departure and destination, for better clarity.
-			ViewBag.Trips = new SelectList(trips.Select(t => new {
-				t.Id,
-				Display = $"{t.DepartureTown} to {t.DestinationTown} on {t.TripDate.ToShortDateString()}"
-			}), "Id", "Display");
+			// Only past trips (date < today)
+			var pastTrips = await _context.Trips
+				.Include(t => t.Organizer)
+				.Where(t => t.TripDate < DateTime.Today)
+				.OrderByDescending(t => t.TripDate)
+				.ToListAsync();
+
+			// Build SelectList with organizer name + email
+			ViewBag.Trips = new SelectList(
+				pastTrips.Select(t => new
+				{
+					t.Id,
+					Display = $"{t.DepartureTown} → {t.DestinationTown} on {t.TripDate:dd.MM.yyyy} by {t.Organizer.FullName} ({t.Organizer.Email})"
+				}),
+				"Id",
+				"Display"
+			);
 
 			return View();
 		}
@@ -64,46 +75,60 @@ namespace SharedTravelBG.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Create(Review review)
 		{
-			if (ModelState.IsValid)
-			{
-				// Retrieve the trip based on review.TripId to check its organiser.
-				var trip = await _context.Trips.FindAsync(review.TripId);
-				string currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+			// Reload past trips for dropdown
+			var pastTrips = await _context.Trips
+				.Include(t => t.Organizer)
+				.Where(t => t.TripDate < DateTime.Today)
+				.OrderByDescending(t => t.TripDate)
+				.ToListAsync();
 
-				if (trip != null && trip.OrganizerId == currentUserId)
-				{
-					// Add a model error if the organiser is trying to review their own trip.
-					ModelState.AddModelError("", "You cannot write a review for yourself.");
-
-					// If you are using a dropdown for trips in your Create view, reload it here.
-					var trips = await _context.Trips.ToListAsync();
-					ViewBag.Trips = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
-						trips.Select(t => new
-						{
-							t.Id,
-							Display = $"{t.DepartureTown} to {t.DestinationTown} - {t.TripDate.ToShortDateString()}"
-						}), "Id", "Display");
-
-					return View(review);
-				}
-
-				// Set the reviewer from the current user's ID.
-				review.ReviewerId = currentUserId;
-				//I CHANGED THIS TO CHECK LATER
-				_context.Reviews.Add(review);
-				await _context.SaveChangesAsync();
-				return RedirectToAction(nameof(Index));
-			}
-
-			// Reload trips for dropdown in case ModelState is invalid.
-			var allTrips = await _context.Trips.ToListAsync();
-			ViewBag.Trips = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
-				allTrips.Select(t => new
+			ViewBag.Trips = new SelectList(
+				pastTrips.Select(t => new
 				{
 					t.Id,
-					Display = $"{t.DepartureTown} to {t.DestinationTown} - {t.TripDate.ToShortDateString()}"
-				}), "Id", "Display");
-			return View(review);
+					Display = $"{t.DepartureTown} → {t.DestinationTown} on {t.TripDate:dd.MM.yyyy} by {t.Organizer.FullName} ({t.Organizer.Email})"
+				}),
+				"Id",
+				"Display"
+			);
+
+			// Ensure the trip exists
+			var trip = await _context.Trips
+				.Include(t => t.Organizer)
+				.FirstOrDefaultAsync(t => t.Id == review.TripId);
+
+			if (trip == null)
+			{
+				ModelState.AddModelError("", "Selected trip does not exist.");
+				return View(review);
+			}
+
+			// Prevent reviewing future trips
+			if (trip.TripDate >= DateTime.Today)
+			{
+				TempData["ErrorMessage"] = "You cannot write a review for a trip that has not yet occurred.";
+				return RedirectToAction(nameof(Create));
+			}
+
+			// Prevent organizer reviewing own trip
+			string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			if (trip.OrganizerId == currentUserId)
+			{
+				TempData["ErrorMessage"] = "You cannot write a review for your own trip.";
+				return RedirectToAction(nameof(Create));
+			}
+
+			// Validate other fields
+			if (!ModelState.IsValid)
+			{
+				return View(review);
+			}
+
+			// Save the review
+			review.ReviewerId = currentUserId;
+			_context.Reviews.Add(review);
+			await _context.SaveChangesAsync();
+			return RedirectToAction("Index", "Reviews");
 		}
 
 		// GET: Reviews/Edit/5
