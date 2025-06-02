@@ -1,72 +1,239 @@
-﻿@{
+﻿@model IEnumerable<SharedTravelBG.Models.Trip>
+
+@using Microsoft.AspNetCore.Identity
+@using SharedTravelBG.Models
+@inject SignInManager<ApplicationUser> SignInManager
+
+@{
     ViewData["Title"] = "Начало";
     var isAuthenticated = User.Identity.IsAuthenticated;
-    <link rel="stylesheet" href="~/css/site.css" />
-
 }
 
+<link rel="stylesheet" href="~/css/site.css" />
 
-<!-- Hero Section -->
-@if (!User.Identity.IsAuthenticated)
+<!-- Hero Section for anonymous users -->
+@if (!isAuthenticated)
 {
-    <div class="jumbotron text-center" style="background: url('/images/hero-bg.jpg') no-repeat center center; background-size: cover; padding: 30px 10px; color: black;">
+    <div class="jumbotron text-center"
+         style="background: url('/images/hero-bg.jpg') no-repeat center center;
+                background-size: cover; padding: 30px 10px; color: black;">
         <h1 class="display-4">Добре дошли в SharedTravelBG</h1>
         <p class="lead">Присъединете се, споделяйте и спестете разходи за гориво, докато пътувате из България.</p>
-        <hr class="my-4" style="border-top: 2px solid rgba(0,0,0,0.3);">
-
+        <hr class="my-4" style="border-top: 2px solid rgba(0,0,0,0.3);" />
     </div>
 }
 
-<!-- Features Section -->
-@if (User.Identity.IsAuthenticated)
+<!-- Features Section for anonymous users -->
+@if (!isAuthenticated)
 {
-
-
     <div class="flex-grow-1 d-flex flex-column justify-content-center">
         <div class="row">
-            <!-- Feature 1: Организирайте пътувания -->
-            <div class="col-md-4 mb-4 mt-5">
+            <div class="col-md-4 mb-4">
                 <div class="card shadow-sm h-100">
-                    <img src="/images/map.png" class="img-fluid" alt="Организирайте пътувания">
+                    <img src="/images/map.png" class="img-fluid" alt="Организирайте пътувания" />
                     <div class="card-body">
                         <h5 class="card-title">Организирайте пътувания</h5>
-                        <p class="card-text">Създавайте и управлявайте споделените си пътувания лесно. Планирайте маршрута, задайте налични места и споделяйте своето пътешествие.</p>
-                        <a href="@Url.Action("Create", "Trips")" class="btn btn-outline-primary">Организирайте сега</a>
+                        <p class="card-text">
+                            Създавайте и управлявайте споделените си пътувания лесно. Планирайте маршрута,
+                            задайте налични места и споделяйте своето пътешествие.
+                        </p>
+                        <a href="@Url.Action("Create", "Trips")" class="btn btn-success">Организирайте сега</a>
                     </div>
                 </div>
             </div>
-            <!-- Feature 2: Присъединете се към пътувания -->
-            <div class="col-md-4 mb-4 mt-5">
+            <div class="col-md-4 mb-4">
                 <div class="card shadow-sm h-100">
-                    <img src="/images/people.jpeg" class="img-fluid" alt="Присъединете се към пътувания">
+                    <img src="/images/people.jpeg" class="img-fluid" alt="Присъединете се към пътувания" />
                     <div class="card-body">
                         <h5 class="card-title">Присъединете се към пътувания</h5>
-                        <p class="card-text">Намерете пътувания, присъединете се към налични возения и спестете разходи за гориво, докато срещате нови хора.</p>
-                        <a href="@Url.Action("Index", "Trips")" class="btn btn-outline-primary">Намерете пътуване</a>
+                        <p class="card-text">
+                            Намерете пътувания, присъединете се към налични возения и спестете
+                            разходи за гориво, докато срещате нови хора.
+                        </p>
+                        <a href="@Url.Action("Index", "Trips")" class="btn btn-success">Намерете пътуване</a>
                     </div>
                 </div>
             </div>
-            <!-- Feature 3: Споделете своя опит -->
-            <div class="col-md-4 mb-4 mt-5">
+            <div class="col-md-4 mb-4">
                 <div class="card shadow-sm h-100">
-                    <img src="/images/review2.jpg" class="img-fluid" alt="Споделете своя опит">
+                    <img src="/images/review2.jpg" class="img-fluid" alt="Споделете своя опит" />
                     <div class="card-body">
                         <h5 class="card-title">Споделете своя опит</h5>
-                        <p class="card-text">Оставете отзиви и оценявайте организаторите на пътувания, за да помогнете на другите да избират най-добрите опции.</p>
-                        <a href="@Url.Action("Index", "Reviews")" class="btn btn-outline-primary">Прочетете отзиви</a>
+                        <p class="card-text">
+                            Оставете отзиви и оценявайте организаторите на пътувания,
+                            за да помогнете на другите да избират най-добрите опции.
+                        </p>
+                        <a href="@Url.Action("Index", "Reviews")" class="btn btn-success">Прочетете отзиви</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 }
-
-<!-- Register Button Section (only for unauthenticated users) -->
-@if (!isAuthenticated)
+else
 {
-    <div class="container my-5 text-center">
-        <a class="btn btn-success btn-lg" href="/Identity/Account/Register" role="button">Регистрирай се сега</a>
+    <!-- Signed-in users: Quick Search + Search Results + Featured Trips -->
+    <div class="container py-5">
+
+        <!-- 1. Quick Search Form -->
+        <h3>Бързо търсене на пътувания</h3>
+        <form asp-action="Index" method="get" class="row g-3 mb-5">
+            <div class="col-md-3">
+                
+                <input type="text"
+                       name="departure"
+                       value="@(ViewContext.HttpContext.Request.Query["departure"])"
+                       class="form-control"
+                       placeholder="От (град)" />
+            </div>
+            <div class="col-md-3">
+                <input type="text"
+                       name="destination"
+                       value="@(ViewContext.HttpContext.Request.Query["destination"])"
+                       class="form-control"
+                       placeholder="До (град)" />
+            </div>
+            <div class="col-md-3">
+                <input type="date"
+                       name="date"
+                       value="@(ViewContext.HttpContext.Request.Query["date"])"
+                       class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Търсене</button>
+            </div>
+        </form>
+
+        <!-- 2. Search Results (if any) -->
+        @{
+            var searchResults = ViewBag.SearchResults as List<Trip>;
+        }
+        @if (searchResults != null)
+        {
+            <h4>Резултати от търсенето (@searchResults.Count)</h4>
+            @if (searchResults.Count == 0)
+            {
+                <p class="text-muted">Няма намерени пътувания.</p>
+            }
+            else
+            {
+                <div class="row g-4 mb-5">
+                    @foreach (var trip in searchResults)
+                    {
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">
+                                        @trip.DepartureTown → @trip.DestinationTown
+                                    </h5>
+                                    <p class="card-text mb-1">
+                                        <strong>Дата:</strong> @trip.TripDate.ToString("MM/dd/yy")<br />
+                                        <strong>Час:</strong>
+                                        @{
+                                            var dt1 = DateTime.Today.Add(trip.PlannedStartTime);
+                                            @dt1.ToString("hh:mm tt")
+                                        }
+                                    </p>
+                                    <p class="card-text text-muted">
+                                        <strong>Организатор:</strong>
+                                        @trip.Organizer.FullName (@trip.Organizer.Email)
+                                    </p>
+                                    <p class="card-text">
+                                        <strong>Оставащи места:</strong>
+                                        @(trip.MaxParticipants - trip.Participants.Count)
+                                    </p>
+                                    <div class="mt-auto">
+                                        @if (trip.Participants.Count < trip.MaxParticipants)
+                                        {
+                                            <form asp-controller="Trips"
+                                                  asp-action="Join"
+                                                  asp-route-id="@trip.Id"
+                                                  method="post">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit"
+                                                        class="btn btn-success w-100">Присъедини се</button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger">Няма места</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        }
+
+        <!-- 3. Featured Trips Section -->
+        @{
+            var featured = ViewBag.Featured as List<Trip>;
+        }
+        <h4>Предстоящи пътувания</h4>
+        @if (featured == null || !featured.Any())
+        {
+            <p class="text-muted">Няма предстоящи пътувания в момента.</p>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach (var trip in featured)
+                {
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">
+                                    @trip.DepartureTown → @trip.DestinationTown
+                                </h5>
+                                <p class="card-text mb-1">
+                                    <strong>Дата:</strong> @trip.TripDate.ToString("MM/dd/yy")<br />
+                                    <strong>Час:</strong>
+                                    @{
+                                        var dt2 = DateTime.Today.Add(trip.PlannedStartTime);
+                                        @dt2.ToString("hh:mm tt")
+                                    }
+                                </p>
+                                <p class="card-text text-muted">
+                                    <strong>Организатор:</strong>
+                                    @trip.Organizer.FullName (@trip.Organizer.Email)
+                                </p>
+                                <p class="card-text">
+                                    <strong>Оставащи места:</strong>
+                                    @(trip.MaxParticipants - trip.Participants.Count)
+                                </p>
+                                <div class="mt-auto">
+                                    @if (trip.Participants.Count < trip.MaxParticipants)
+                                    {
+                                        <form asp-controller="Trips"
+                                              asp-action="Join"
+                                              asp-route-id="@trip.Id"
+                                              method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit"
+                                                    class="btn btn-primary w-100 btn-lg">Присъедини се</button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger">Няма места</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
     </div>
 }
 
-
+<!-- Register Button for anonymous users -->
+@if (!isAuthenticated)
+{
+    <div class="container my-5 text-center">
+        <a class="btn btn-success btn-lg"
+           href="/Identity/Account/Register" role="button">Регистрирай се сега</a>
+    </div>
+}
