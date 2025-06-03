@@ -100,6 +100,14 @@ else
                        class="form-control" />
             </div>
             <div class="col-md-3">
+                <input type="number"
+                       name="minAvailableSpots"
+                       min="1"
+                       value="@(ViewContext.HttpContext.Request.Query["minAvailableSpots"])"
+                       class="form-control"
+                       placeholder="Мин. места" />
+            </div>
+            <div class="col-md-3">
                 <button type="submit" class="btn btn-primary w-100">Търсене</button>
             </div>
         </form>
@@ -228,7 +236,7 @@ else
         }
     </div>
 }
-
+ 
 <!-- Register Button for anonymous users -->
 @if (!isAuthenticated)
 {

@@ -26,10 +26,88 @@ namespace SharedTravelBG.Controllers
 		}
 
 		[AllowAnonymous]
-		public IActionResult Index()
-        {
-            return View();
-        }
+		// GET: Home/Index
+		// Optional search parameters: departure, destination, date
+		public async Task<IActionResult> Index(string departure, string destination, DateTime? date, int? minAvailableSpots)
+		{
+
+			ViewBag.MinAvailableSpots = minAvailableSpots;
+
+			// If user is not signed in, show heroes only
+			if (!User.Identity.IsAuthenticated)
+			{
+				ViewBag.SearchResults = null;
+				ViewBag.Featured = new List<Trip>();
+				return View();
+			}
+
+			// 1. Build search results if any parameter was provided
+			List<Trip> searchResults = null;
+			if (!string.IsNullOrWhiteSpace(departure)
+				|| !string.IsNullOrWhiteSpace(destination)
+				|| date.HasValue
+				|| (minAvailableSpots.HasValue && minAvailableSpots.Value > 0));
+			{
+				var query = _context.Trips
+
+					.Include(t => t.Organizer)
+					.Include(t => t.Participants)
+					.Where(t => t.TripDate >= DateTime.Today);
+
+				if (!string.IsNullOrWhiteSpace(departure))
+				{
+					query = query.Where(t => t.DepartureTown.Contains(departure));
+				}
+
+				if (!string.IsNullOrWhiteSpace(destination))
+				{
+					query = query.Where(t => t.DestinationTown.Contains(destination));
+				}
+
+				if (date.HasValue)
+				{
+					query = query.Where(t => t.TripDate == date.Value.Date);
+				}
+
+				// Only trips with available seats
+				query = query.Where(t => t.Participants.Count < t.MaxParticipants);
+
+				searchResults = await query
+					.OrderBy(t => t.TripDate)
+					.ThenBy(t => t.PlannedStartTime)
+					.ToListAsync();
+				if (minAvailableSpots.HasValue && minAvailableSpots.Value > 0)
+				{
+					query = query.Where(t =>
+						(t.MaxParticipants - t.Participants.Count)
+						>= minAvailableSpots.Value);
+				}
+
+				searchResults = await query
+					.OrderBy(t => t.TripDate)
+					.ThenBy(t => t.PlannedStartTime)
+					.ToListAsync();
+			
+		}
+
+
+			ViewBag.SearchResults = searchResults;
+
+			// 2. Always show up to 5 featured upcoming trips with seats left
+			var featured = await _context.Trips
+				.Include(t => t.Organizer)
+				.Include(t => t.Participants)
+				.Where(t => t.TripDate >= DateTime.Today
+							&& t.Participants.Count < t.MaxParticipants)
+				.OrderBy(t => t.TripDate)
+				.ThenBy(t => t.PlannedStartTime)
+				.Take(5)
+				.ToListAsync();
+
+			ViewBag.Featured = featured;
+
+			return View();
+		}
 
 		[AllowAnonymous]
 		public IActionResult Privacy()
@@ -116,11 +194,7 @@ namespace SharedTravelBG.Controllers
 			return View(model);
 		}
 
-
-
-
-
-
+		
 
 	}
 } 
