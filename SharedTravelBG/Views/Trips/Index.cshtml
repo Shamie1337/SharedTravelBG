@@ -6,6 +6,13 @@
     string currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 }
 
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-warning">
+        @TempData["Message"]
+    </div>
+}
+
 <h1>Trips</h1>
 
 <p>
@@ -72,7 +79,13 @@
                 <td>@availableSpots</td>
                 <td>
                     <!-- Details button is always visible -->
-                    <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@trip.Id">Details</a>
+                    <a class="btn btn-info btn-sm"
+                       asp-controller="Trips"
+                       asp-action="Details"
+                       asp-route-id="@trip.Id">
+                        Details
+                    </a>
+
                     @if (isOrganizer)
                     {
                      <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@trip.Id">Edit</a>

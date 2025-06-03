@@ -1,6 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
  
+ 
 <head>
     <meta charset="utf-8" />
     <title>@ViewData["Title"] - SharedTravelBG</title>
@@ -24,10 +25,41 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
-                        @if (User.Identity.IsAuthenticated)
-                        {
+                        
                             <li class="nav-item"><a class="nav-link" href="@Url.Action("Index", "Home")">Home</a></li>
-                            <li class="nav-item"><a class="nav-link" href="@Url.Action("Index", "Trips")">Trips</a></li>
+
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle"
+                               href="#"
+                               id="tripsDropdown"
+                               role="button"
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false">
+                                Trips
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="tripsDropdown">
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="Trips"
+                                       asp-action="Index">
+                                        Current Trips
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="Trips"
+                                       asp-action="Old">
+                                        Old Trips
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+
+
+
+
                             <li class="nav-item"><a class="nav-link" href="@Url.Action("Index", "Reviews")">Reviews</a></li>
 
 
@@ -60,60 +92,59 @@
 
 
                             
-                                <div class="dropdown d-inline-block">
-                                    <button class="btn btn-primary dropdown-toggle"
-                                            type="button"
-                                            id="userMenuButton"
-                                            data-bs-toggle="dropdown"
-                                            aria-expanded="false">
-                                        My Dashboard
-                                    </button>
-                                    <ul class="dropdown-menu" aria-labelledby="userMenuButton">
-                                        <li>
-                                            <a class="dropdown-item" asp-controller="Trips" asp-action="MyTrips">
-                                                Participating Trips
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item" asp-controller="Trips" asp-action="MyOrganized">
-                                                Organized Trips
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item" asp-controller="Reviews" asp-action="MyReviews">
-                                                My Reviews
-                                            </a>
-                                        </li>
-                                    <li>
-                                        <a class="dropdown-item"   asp-controller="Home"  asp-action="Profile">
-                                            My Profile
-                                        </a>
-                                    </li>
-                                    
-                                    
-                                    </ul>
-                                </div>
-                           
-                        }
+                                
+
+
+                            
+                        
+
+                        
                       
                            
                         
 
                     </ul>
                     <ul class="navbar-nav">
+
                         
                         @if (User.Identity.IsAuthenticated)
                         {
-                            var fullName = User.FindFirst("FullName")?.Value ?? User.Identity.Name;
-
-
-                            <li class="nav-item">
-                                <a class="nav-link" href="/Identity/Account/Manage">Hello, @fullName</a>
-                            </li>
-                            <li class="nav-item">
-                                <!-- Use the new GET logout endpoint -->
-                                <a class="nav-link" href="@Url.Action("Logout", "Account")">Logout</a>
-                            </li>
+                            <div class="dropdown d-inline-block">
+                                <button class="btn btn-primary dropdown-toggle"
+                                        type="button"
+                                        id="userMenuButton"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                    My Dashboard
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="userMenuButton">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Trips" asp-action="MyTrips">
+                                            Participating Trips
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Trips" asp-action="MyOrganized">
+                                            Organized Trips
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Reviews" asp-action="MyReviews">
+                                            My Reviews
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Home" asp-action="Profile">
+                                            My Profile
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <!-- Use the new GET logout endpoint -->
+                                        <a class="dropdown-item" href="@Url.Action("Logout", "Account")">Logout</a>
+                                    </li>
+                                </ul>
+                            </div>
+                           
                         }
                         else
                         {
@@ -138,6 +169,17 @@
         <div class="container">
             &copy; @DateTime.Now.Year – SharedTravelBG
         </div>
+
+
+       
+
+
+
+
+
+
+
+
     </footer>
 
     <!-- Bootstrap JS Bundle -->

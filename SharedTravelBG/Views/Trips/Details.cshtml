@@ -1,75 +1,104 @@
 ﻿@model SharedTravelBG.Models.Trip
 
-
 @{
     ViewData["Title"] = "Trip Details";
-    int availableSpots = ViewBag.AvailableSpots;
-    double organiserRating = ViewBag.OrganiserRating;
-    int reviewCount = ViewBag.ReviewCount;
-    string currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-    bool isOrganizer = (Model.OrganizerId == currentUserId);
-    bool isParticipant = Model.Participants.Any(p => p.Id == currentUserId);
 
-    var tripId = Model.Id.ToString();
-    var organizerId = Model.OrganizerId;
-    
+    // Safely retrieve values from ViewBag (provide defaults if null)
+    double organiserRating = ViewBag.OrganiserRating as double? ?? 0.0;
+    int reviewCount = ViewBag.ReviewCount as int? ?? 0;
+
+    // Current user’s ID
+    string currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+    // Determine if the current user is the organizer or a participant
+    bool isOrganizer = (Model.OrganizerId == currentUserId);
+    bool isParticipant = Model.Participants?.Any(p => p.Id == currentUserId) ?? false;
+
+    // Calculate available spots
+    int availableSpots = Model.MaxParticipants - (Model.Participants?.Count ?? 0);
+
+    // Compare dates using DateTime.Date
+    var tripDateOnly = Model.TripDate.Date;
+    var todayDateOnly = DateTime.Today;
+}
 
 <h1>Trip Details</h1>
 
 <div class="card mb-4">
     <div class="card-body">
         <h4>@Model.DepartureTown to @Model.DestinationTown</h4>
-        <p><strong>Date:</strong> @Model.TripDate.ToShortDateString()</p>
-        <p><strong>Planned Start:</strong> @Model.PlannedStartTime.ToString(@"hh\:mm")</p>
+        <p>
+            <strong>Date:</strong> @Model.TripDate.ToString("dd.MM.yyyy")
+        </p>
+        <p>
+            <strong>Planned Start:</strong>
+            @{
+                // Format TimeSpan as HH:mm
+                var time = Model.PlannedStartTime;
+                @time.ToString(@"hh\:mm")
+            }
+        </p>
         <p>
             <strong>Organizer's Name:</strong> @Model.Organizer?.FullName<br />
             <strong>Organizer's Email:</strong> @Model.Organizer?.Email<br />
-            <strong>Organizer's Overall Rating:</strong> @organiserRating.ToString("N1")
+            <strong>Organizer’s Overall Rating:</strong> @organiserRating.ToString("N1")
             @if (reviewCount > 0)
             {
                 <span>(from @reviewCount reviews)</span>
             }
         </p>
-        <p><strong>Organizer Phone:</strong> @Model.OrganizerPhoneNumber</p>
-        <p><strong>Available Spots:</strong> @availableSpots</p>
-        <p><strong>Participants:</strong> @Model.Participants.Count / @Model.MaxParticipants</p>
+        <p>
+            <strong>Organizer Phone:</strong> @Model.OrganizerPhoneNumber
+        </p>
+        <p>
+            <strong>Available Spots:</strong> @availableSpots
+        </p>
+        <p>
+            <strong>Participants:</strong> @(Model.Participants?.Count ?? 0) / @Model.MaxParticipants
+        </p>
     </div>
 </div>
 
 <div>
-    @if (!isOrganizer)
+    @* Show Join/Leave only if the trip is today or in the future *@
+    @if (tripDateOnly >= todayDateOnly)
     {
-        if (!isParticipant)
+        @if (!isOrganizer)
         {
-            <form asp-action="Join" method="post" class="d-inline">
-                <input type="hidden" name="id" value="@Model.Id" />
-                @Html.AntiForgeryToken()
-                <button type="submit" class="btn btn-success">Join</button>
-            </form>
+            @* If the user is not the organizer *@
+            @if (!isParticipant && availableSpots > 0)
+            {
+                <form asp-action="Join" method="post" class="d-inline">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-success">Join</button>
+                </form>
+            }
+            else if (isParticipant)
+            {
+                <form asp-action="Leave" method="post" class="d-inline">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-warning">Leave</button>
+                </form>
+            }
+            else if (availableSpots == 0)
+            {
+                <span class="text-danger">No spots available</span>
+            }
         }
         else
         {
-            <form asp-action="Leave" method="post" class="d-inline">
-                <input type="hidden" name="id" value="@Model.Id" />
-                @Html.AntiForgeryToken()
-                <button type="submit" class="btn btn-warning">Leave</button>
-            </form>
+            @* If the user is the organizer *@
+            <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+            <a class="btn btn-danger" asp-action="Delete" asp-route-id="@Model.Id">Delete</a>
         }
     }
     else
     {
-        <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
-        <a class="btn btn-danger" asp-action="Delete" asp-route-id="@Model.Id">Delete</a>
+        <span class="text-muted">This trip has already taken place.</span>
     }
-
 </div>
-       
-
-
-  
-
-}
-
 
 <div class="mt-3">
     <a class="btn btn-secondary" asp-action="Index">Back to Trips</a>

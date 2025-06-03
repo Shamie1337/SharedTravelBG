@@ -16,82 +16,89 @@ namespace SharedTravelBG.Controllers
 			_context = context;
 		}
 
-		// GET: Trips
-		public async Task<IActionResult> Index(string? departure,
-		string? destination,
-		DateTime? date,
-		TimeSpan? time )
+		
+		/// Shows only upcoming trips (TripDate >= today). 
+		/// If any search filters are provided, applies them; otherwise returns all future trips.
+		
+		public async Task<IActionResult> Index(
+			string departure,
+			string destination,
+			DateTime? date,
+			int? minAvailableSpots    // optional filter for “Мин. места”
+		)
 		{
-			// Include the Participants navigation property so that each trip's list is populated.
+			// 1) Make today’s date for comparisons
+			var today = DateTime.Today;
 
-			var trips = _context.Trips
-			.Include(t => t.Organizer)
-			.Include(t => t.Participants)
-			.AsQueryable();
+			// 2) Figure out if the user actually provided any search parameter
+			bool anySearch =
+				!string.IsNullOrWhiteSpace(departure)
+				|| !string.IsNullOrWhiteSpace(destination)
+				|| date.HasValue
+				|| (minAvailableSpots.HasValue && minAvailableSpots.Value > 0);
 
-			if (!string.IsNullOrWhiteSpace(departure))
-				trips = trips.Where(t => t.DepartureTown.Contains(departure));
+			ViewBag.AnySearch = anySearch;
+			ViewBag.MinAvailableSpots = minAvailableSpots; // so the form can re‐populate it
 
-			if (!string.IsNullOrWhiteSpace(destination))
-				trips = trips.Where(t => t.DestinationTown.Contains(destination));
-
-			if (date.HasValue)
-				trips = trips.Where(t => t.TripDate.Date == date.Value.Date);
-
-			if (time.HasValue)
-				trips = trips.Where(t => t.PlannedStartTime == time.Value);
-
-			var result = await trips.ToListAsync();
-
-			ViewData["departure"] = departure ?? "";
-			ViewData["destination"] = destination ?? "";
-			ViewData["date"] = date?.ToString("yyyy-MM-dd") ?? "";
-			ViewData["time"] = time?.ToString(@"hh\:mm") ?? "";
-
-			return View(result);
-		}
-
-		public async Task<IActionResult> Details(int? id)
-		{
-			if (id == null)
-			{
-				return NotFound();
-			}
-
-			var trip = await _context.Trips
+			// 3) Base query: only trips with TripDate >= today
+			var baseQuery = _context.Trips
 				.Include(t => t.Organizer)
 				.Include(t => t.Participants)
-				.FirstOrDefaultAsync(t => t.Id == id);
-			if (trip == null)
+				.Where(t => t.TripDate >= today);
+
+			// 4) If no search terms, just fetch all future trips
+			if (!anySearch)
 			{
-				return NotFound();
+				var allFuture = await baseQuery
+					.OrderBy(t => t.TripDate)
+					.ThenBy(t => t.PlannedStartTime)
+					.ToListAsync();
+
+				// Pass that as the model to the view:
+				return View(allFuture);
 			}
 
-			// Calculate available spots.
-			int availableSpots = trip.MaxParticipants - (trip.Participants?.Count ?? 0);
+			// 5) Otherwise, apply each filter on top of baseQuery
+			if (!string.IsNullOrWhiteSpace(departure))
+			{
+				baseQuery = baseQuery.Where(t =>
+					t.DepartureTown.Contains(departure));
+			}
 
-			// Compute organiser's overall rating:
-			// 1. Get all trips organized by this organiser.
-			var organiserTripIds = await _context.Trips
-				.Where(t => t.OrganizerId == trip.OrganizerId)
-				.Select(t => t.Id)
+			if (!string.IsNullOrWhiteSpace(destination))
+			{
+				baseQuery = baseQuery.Where(t =>
+					t.DestinationTown.Contains(destination));
+			}
+
+			if (date.HasValue)
+			{
+				baseQuery = baseQuery.Where(t =>
+					t.TripDate == date.Value.Date);
+			}
+
+			// Only trips with at least one free seat
+			baseQuery = baseQuery.Where(t =>
+				t.Participants.Count < t.MaxParticipants);
+
+			// “Min Available Spots” filter
+			if (minAvailableSpots.HasValue && minAvailableSpots.Value > 0)
+			{
+				baseQuery = baseQuery.Where(t =>
+					(t.MaxParticipants - t.Participants.Count)
+					>= minAvailableSpots.Value);
+			}
+
+			var filteredResults = await baseQuery
+				.OrderBy(t => t.TripDate)
+				.ThenBy(t => t.PlannedStartTime)
 				.ToListAsync();
 
-			// 2. Get all reviews for those trips.
-			var organiserReviews = await _context.Reviews
-				.Where(r => organiserTripIds.Contains(r.TripId))
-				.ToListAsync();
-
-			// 3. Compute average rating (if there are any reviews)
-			double averageRating = organiserReviews.Any() ? organiserReviews.Average(r => r.Rating) : 0;
-
-			// Pass the computed values to the view via ViewBag.
-			ViewBag.AvailableSpots = availableSpots;
-			ViewBag.OrganiserRating = averageRating;
-			ViewBag.ReviewCount = organiserReviews.Count;
-
-			return View(trip);
+			// 6) Pass the filtered list as the model
+			return View(filteredResults);
 		}
+
+		
 
 
 		// GET: Trips/Create
@@ -235,6 +242,13 @@ namespace SharedTravelBG.Controllers
 				return Forbid();
 			}
 
+			// NEW: Prevent the organizer from joining their own trip.
+			if (trip.OrganizerId == currentUserId)
+			{
+				TempData["Message"] = "Не можете да се присъедините към собственото си пътуване.";
+				return RedirectToAction(nameof(Index));
+			}
+
 			// If the user is not already a participant, add them (if there's space).
 			if (!trip.Participants.Any(p => p.Id == currentUserId))
 			{
@@ -249,13 +263,12 @@ namespace SharedTravelBG.Controllers
 				}
 				else
 				{
-					TempData["Message"] = "Sorry, this trip is full.";
+					TempData["Message"] = "Съжаляваме, това пътуване е пълно.";
 				}
 			}
 
-			// Redirect back to the Index page so the updated status is visible.
+			// Redirect back to the Index page so the updated status (or error) is visible.
 			return RedirectToAction(nameof(Index));
-
 		}
 
 		//Adding the MyTrips
@@ -322,7 +335,39 @@ namespace SharedTravelBG.Controllers
 			return View(organized);
 		}
 
-		
 
+		
+		/// Shows all past trips (TripDate &lt; today).
+		
+		public async Task<IActionResult> Old()
+		{
+			var today = DateTime.Today;
+			var pastTrips = await _context.Trips
+				.Include(t => t.Organizer)
+				.Include(t => t.Participants)
+				.Where(t => t.TripDate < today)
+				.OrderByDescending(t => t.TripDate)
+				.ThenByDescending(t => t.PlannedStartTime)
+				.ToListAsync();
+
+			return View(pastTrips);
+		}
+
+		// GET: /Trips/Details/5
+		public async Task<IActionResult> Details(int id)
+		{
+			// Fetch the trip from the database
+			var trip = await _context.Trips
+				.Include(t => t.Organizer)
+				.Include(t => t.Participants)
+				.FirstOrDefaultAsync(m => m.Id == id);
+
+			if (trip == null)
+			{
+				return NotFound();
+			}
+
+			return View(trip);
+		}
 	}
 }
