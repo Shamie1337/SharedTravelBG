@@ -30,7 +30,7 @@ namespace SharedTravelBG.Controllers
 		// Optional search parameters: departure, destination, date
 		public async Task<IActionResult> Index(string departure, string destination, DateTime? date, int? minAvailableSpots)
 		{
-
+			// Keep the entered minimum‐spots value so the view can re‐populate it
 			ViewBag.MinAvailableSpots = minAvailableSpots;
 
 			// If user is not signed in, show heroes only
@@ -38,44 +38,51 @@ namespace SharedTravelBG.Controllers
 			{
 				ViewBag.SearchResults = null;
 				ViewBag.Featured = new List<Trip>();
+				ViewBag.AnySearch = false;   // No search was performed
 				return View();
 			}
 
-			// 1. Build search results if any parameter was provided
-			List<Trip> searchResults = null;
-			if (!string.IsNullOrWhiteSpace(departure)
+			// Determine whether any filter field was provided
+			bool anySearch =
+				!string.IsNullOrWhiteSpace(departure)
 				|| !string.IsNullOrWhiteSpace(destination)
 				|| date.HasValue
-				|| (minAvailableSpots.HasValue && minAvailableSpots.Value > 0));
-			{
-				var query = _context.Trips
+				|| (minAvailableSpots.HasValue && minAvailableSpots.Value > 0);
 
+			ViewBag.AnySearch = anySearch;
+
+			List<Trip> searchResults = null;
+
+			if (anySearch)
+			{
+				// 1. Build a base query for future trips
+				var query = _context.Trips
 					.Include(t => t.Organizer)
 					.Include(t => t.Participants)
 					.Where(t => t.TripDate >= DateTime.Today);
 
+				// 2. Apply “departure” filter if supplied
 				if (!string.IsNullOrWhiteSpace(departure))
 				{
 					query = query.Where(t => t.DepartureTown.Contains(departure));
 				}
 
+				// 3. Apply “destination” filter if supplied
 				if (!string.IsNullOrWhiteSpace(destination))
 				{
 					query = query.Where(t => t.DestinationTown.Contains(destination));
 				}
 
+				// 4. Apply “date” filter if supplied
 				if (date.HasValue)
 				{
 					query = query.Where(t => t.TripDate == date.Value.Date);
 				}
 
-				// Only trips with available seats
+				// 5. Only include trips that still have at least one free seat
 				query = query.Where(t => t.Participants.Count < t.MaxParticipants);
 
-				searchResults = await query
-					.OrderBy(t => t.TripDate)
-					.ThenBy(t => t.PlannedStartTime)
-					.ToListAsync();
+				// 6. If the user asked for a minimum number of free seats, filter by that
 				if (minAvailableSpots.HasValue && minAvailableSpots.Value > 0)
 				{
 					query = query.Where(t =>
@@ -83,17 +90,16 @@ namespace SharedTravelBG.Controllers
 						>= minAvailableSpots.Value);
 				}
 
+				// 7. Execute the query, ordering by date/time
 				searchResults = await query
 					.OrderBy(t => t.TripDate)
 					.ThenBy(t => t.PlannedStartTime)
 					.ToListAsync();
-			
-		}
-
+			}
 
 			ViewBag.SearchResults = searchResults;
 
-			// 2. Always show up to 5 featured upcoming trips with seats left
+			// 8. Always fetch up to 5 featured upcoming trips with seats left
 			var featured = await _context.Trips
 				.Include(t => t.Organizer)
 				.Include(t => t.Participants)
@@ -108,6 +114,7 @@ namespace SharedTravelBG.Controllers
 
 			return View();
 		}
+
 
 		[AllowAnonymous]
 		public IActionResult Privacy()
