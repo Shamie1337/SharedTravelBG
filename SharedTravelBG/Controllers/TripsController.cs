@@ -40,11 +40,13 @@ namespace SharedTravelBG.Controllers
 			ViewBag.AnySearch = anySearch;
 			ViewBag.MinAvailableSpots = minAvailableSpots; // so the form can re‐populate it
 
-			// 3) Base query: only trips with TripDate >= today
+			// 3) Base query: only trips with TripDate >= today and that are not full
 			var baseQuery = _context.Trips
 				.Include(t => t.Organizer)
 				.Include(t => t.Participants)
-				.Where(t => t.TripDate >= today);
+				.Where(t => t.TripDate >= today)
+				.Where(t => t.Participants.Count < t.MaxParticipants);
+
 
 			// 4) If no search terms, just fetch all future trips
 			if (!anySearch)
