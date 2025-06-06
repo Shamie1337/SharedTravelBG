@@ -1,8 +1,11 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using SharedTravelBG.Models;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Razor;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,7 +63,11 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.AddSignalR();
 
 
+
+
 var app = builder.Build();
+
+
 
 // (Standard middleware configuration below)
 if (!app.Environment.IsDevelopment())

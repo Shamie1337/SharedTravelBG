@@ -1,4 +1,4 @@
-/* Override Bootstrap's .bg-primary class with a dark-green background */
+﻿/* Override Bootstrap's .bg-primary class with a dark-green background */
 .my-5 {
     margin-top: 0 !important;
 }
@@ -45,4 +45,54 @@
     background-color: #28a745;
     border-color: #28a745;
 }
+
+.fade-up {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+    .fade-up.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+/* ─── Quick‐Search Card Styling ─── */
+.search-card {
+    background: #fff;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+}
+
+    /* Make the labels slightly bolder and smaller spacing */
+    .search-card .form-label {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+
+    /* Increase input height and border‐radius for a cleaner look */
+    .search-card .form-control-lg {
+        border-radius: 0.375rem;
+        padding: 0.75rem 1rem;
+    }
+
+    /* Style primary and outline buttons to match theme */
+    .search-card .btn-primary {
+        background-color: #2A5934 !important;
+        border-color: #2A5934 !important;
+    }
+
+    .search-card .btn-outline-secondary {
+        border-color: #2A5934 !important;
+        color: #2A5934 !important;
+    }
+
+        .search-card .btn-outline-secondary:hover {
+            background-color: #2A5934 !important;
+            color: #fff !important;
+        }
+
+
 
