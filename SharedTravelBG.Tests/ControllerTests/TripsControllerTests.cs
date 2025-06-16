@@ -134,7 +134,7 @@ namespace SharedTravelBG.Tests.Controllers
 			var controller = GetController(ctx, "user1");
 
 			// Act
-			var result = await controller.Index(null, null, null, null);
+			var result = await controller.Index(null, null, null, null, null);
 			var trips = ExtractTrips(result);
 
 			// Trip #1 (tomorrow) should appear; Trip #2 (past) excluded; Trip #3 (today but full) excluded
@@ -150,7 +150,7 @@ namespace SharedTravelBG.Tests.Controllers
 			var controller = GetController(ctx, "user1");
 
 			// Act: filter departure = "Sofia"
-			var result = await controller.Index("Sofia", null, null, null);
+			var result = await controller.Index("Sofia", null, null, null, null);
 			var trips = ExtractTrips(result);
 
 			// Only Trip #1 (future, dep=“Sofia”) and Trip #3 (today, dep=“Sofia” but unfilled) appear.
@@ -167,7 +167,7 @@ namespace SharedTravelBG.Tests.Controllers
 			var controller = GetController(ctx, "user1");
 
 			// Act: filter destination = "Burgas"
-			var result = await controller.Index(null, "Burgas", null, null);
+			var result = await controller.Index(null, "Burgas", null, null, null);
 			var trips = ExtractTrips(result);
 
 			// Trip #2 is past—excluded. Trip #3 (today, dest="Burgas") appears if not full.
@@ -184,7 +184,7 @@ namespace SharedTravelBG.Tests.Controllers
 			var targetDate = DateTime.Today.AddDays(1);
 
 			// Act: filter date = tomorrow
-			var result = await controller.Index(null, null, targetDate, null);
+			var result = await controller.Index(null, null, targetDate, null, null);
 			var trips = ExtractTrips(result);
 
 			Assert.Single(trips);
@@ -201,7 +201,7 @@ namespace SharedTravelBG.Tests.Controllers
 			var controller = GetController(ctx, "user1");
 
 			// Act: minAvailableSpots = 2
-			var result = await controller.Index(null, null, null, 2);
+			var result = await controller.Index(null, null, null, null,2);
 			var trips = ExtractTrips(result);
 
 			// Only Trip #1 has available >=2

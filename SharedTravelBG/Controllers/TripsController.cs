@@ -16,51 +16,55 @@ namespace SharedTravelBG.Controllers
 			_context = context;
 		}
 
-		
+
 		/// Shows only upcoming trips (TripDate >= today). 
 		/// If any search filters are provided, applies them; otherwise returns all future trips.
-		
+
 		public async Task<IActionResult> Index(
 			string departure,
 			string destination,
 			DateTime? date,
-			int? minAvailableSpots    // optional filter for “Мин. места”
-		)
+			string time,               
+			int? minAvailableSpots     
+)
 		{
-			// 1) Make today’s date for comparisons
+			// 1) Today's date for comparisons
 			var today = DateTime.Today;
 
-			// 2) Figure out if the user actually provided any search parameter
+			// 2) Figure out if the user provided any search parameter
 			bool anySearch =
 				!string.IsNullOrWhiteSpace(departure)
-				|| !string.IsNullOrWhiteSpace(destination)
-				|| date.HasValue
-				|| (minAvailableSpots.HasValue && minAvailableSpots.Value > 0);
+			 || !string.IsNullOrWhiteSpace(destination)
+			 || date.HasValue
+			 || !string.IsNullOrWhiteSpace(time)               
+			 || (minAvailableSpots.HasValue && minAvailableSpots.Value > 0);
 
+			// 3) Push filter values into ViewData/ViewBag so the form can repopulate
 			ViewBag.AnySearch = anySearch;
-			ViewBag.MinAvailableSpots = minAvailableSpots; // so the form can re‐populate it
+			ViewBag.MinAvailableSpots = minAvailableSpots;
+			ViewData["departure"] = departure;
+			ViewData["destination"] = destination;
+			ViewData["date"] = date?.ToString("yyyy-MM-dd");
+			ViewData["time"] = time;                    // raw "HH:mm" string
 
-			// 3) Base query: only trips with TripDate >= today and that are not full
+			// 4) Base query: only upcoming, not-full trips
 			var baseQuery = _context.Trips
 				.Include(t => t.Organizer)
 				.Include(t => t.Participants)
 				.Where(t => t.TripDate >= today)
 				.Where(t => t.Participants.Count < t.MaxParticipants);
 
-
-			// 4) If no search terms, just fetch all future trips
+			// 5) If no search terms, return all future trips
 			if (!anySearch)
 			{
 				var allFuture = await baseQuery
 					.OrderBy(t => t.TripDate)
 					.ThenBy(t => t.PlannedStartTime)
 					.ToListAsync();
-
-				// Pass that as the model to the view:
 				return View(allFuture);
 			}
 
-			// 5) Otherwise, apply each filter on top of baseQuery
+			// 6) Apply each filter on top of baseQuery
 			if (!string.IsNullOrWhiteSpace(departure))
 			{
 				baseQuery = baseQuery.Where(t =>
@@ -79,11 +83,13 @@ namespace SharedTravelBG.Controllers
 					t.TripDate == date.Value.Date);
 			}
 
-			// Only trips with at least one free seat
-			baseQuery = baseQuery.Where(t =>
-				t.Participants.Count < t.MaxParticipants);
+			if (!string.IsNullOrWhiteSpace(time)
+				&& TimeSpan.TryParse(time, out var parsedTime))
+			{
+				baseQuery = baseQuery.Where(t =>
+					t.PlannedStartTime == parsedTime);
+			}
 
-			// “Min Available Spots” filter
 			if (minAvailableSpots.HasValue && minAvailableSpots.Value > 0)
 			{
 				baseQuery = baseQuery.Where(t =>
@@ -91,16 +97,16 @@ namespace SharedTravelBG.Controllers
 					>= minAvailableSpots.Value);
 			}
 
+			// 7) Execute filtered query
 			var filteredResults = await baseQuery
 				.OrderBy(t => t.TripDate)
 				.ThenBy(t => t.PlannedStartTime)
 				.ToListAsync();
 
-			// 6) Pass the filtered list as the model
+			// 8) Return the view
 			return View(filteredResults);
 		}
 
-		
 
 
 		// GET: Trips/Create
