@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="bg">
 <head>
     <meta charset="utf-8" />
     <title>@ViewData["Title"] – SharedTravelBG</title>
@@ -13,6 +13,8 @@
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
     <!-- Custom CSS -->
     <link rel="stylesheet" href="~/css/site.css?v=2" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
 
     <!-- ───── Animation CSS (for “fade‐up”) ───── -->
     <style>
@@ -29,6 +31,11 @@
             }
     </style>
 </head>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<!-- Bulgarian locale file -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/bg.js"></script>
+
 <body class="d-flex flex-column min-vh-100">
     <!-- Toast Container (for TempData messages) -->
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
@@ -54,7 +61,7 @@
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
                             <a class="nav-link" href="@Url.Action("Index", "Home")">
-                                Home
+                                Начало
                             </a>
                         </li>
 
@@ -65,17 +72,17 @@
                                role="button"
                                data-bs-toggle="dropdown"
                                aria-expanded="false">
-                                <i class="bi bi-car-front-fill"></i> Trips
+                                <i class="bi bi-car-front-fill"></i> Пътувания
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="tripsDropdown">
                                 <li>
                                     <a class="dropdown-item" asp-controller="Trips" asp-action="Index">
-                                        Current Trips
+                                        Текущи пътувания
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item" asp-controller="Trips" asp-action="Old">
-                                        Old Trips
+                                        Стари пътувания
                                     </a>
                                 </li>
                             </ul>
@@ -83,7 +90,7 @@
 
                         <li class="nav-item">
                             <a class="nav-link" href="@Url.Action("Index", "Reviews")">
-                                <i class="bi bi-chat-dots-fill"></i> Reviews
+                                <i class="bi bi-chat-dots-fill"></i> Отзиви
                             </a>
                         </li>
 
@@ -94,25 +101,35 @@
                                role="button"
                                data-bs-toggle="dropdown"
                                aria-expanded="false">
-                                <i class="bi bi-shop-window"></i> Rentals
+                                <i class="bi bi-shop-window"></i> Наеми
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="rentalsDropdown">
                                 <li>
                                     <a class="dropdown-item"
                                        asp-controller="RentedVehicles"
                                        asp-action="Index">
-                                        By People
+                                        От хора
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item"
                                        asp-controller="RentingCompanies"
                                        asp-action="Index">
-                                        By Companies
+                                        От компании
                                     </a>
                                 </li>
                             </ul>
                         </li>
+
+                        @* Admin-only link to manage users *@
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Admin" asp-action="Users">
+                                    <i class="bi bi-people-fill"></i> Управление на потребителите
+                                </a>
+                            </li>
+                        }
                     </ul>
 
                     <ul class="navbar-nav">
@@ -130,28 +147,28 @@
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
                                     <li>
                                         <a class="dropdown-item" asp-controller="Trips" asp-action="MyTrips">
-                                            Participating Trips
+                                            Участващи пътувания
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" asp-controller="Trips" asp-action="MyOrganized">
-                                            Organized Trips
+                                            Организирани пътувания
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" asp-controller="Reviews" asp-action="MyReviews">
-                                            My Reviews
+                                            Моите отзиви
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" asp-controller="Home" asp-action="Profile">
-                                            My Profile
+                                            Моят профил
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider" /></li>
                                     <li class="nav-item">
                                         <a class="dropdown-item" href="@Url.Action("Logout", "Account")">
-                                            Logout
+                                            Изход
                                         </a>
                                     </li>
                                 </ul>
@@ -161,12 +178,12 @@
                         {
                             <li class="nav-item">
                                 <a class="nav-link" href="/Identity/Account/Login">
-                                    <i class="bi bi-box-arrow-in-right"></i> Login
+                                    <i class="bi bi-box-arrow-in-right"></i> Вход
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="/Identity/Account/Register">
-                                    <i class="bi bi-pencil-square"></i> Register
+                                    <i class="bi bi-pencil-square"></i> Регистрация
                                 </a>
                             </li>
                         }
@@ -183,7 +200,7 @@
     <!-- Footer -->
     <footer class="bg-light mt-auto py-4">
         <div class="text-center">
-            <small>&copy; @DateTime.Now.Year – SharedTravelBG. All Rights Reserved.</small>
+            <small>&copy; @DateTime.Now.Year – SharedTravelBG. Всички права запазени.</small>
         </div>
     </footer>
 
@@ -194,10 +211,8 @@
     <!-- ───── Animation Script (fade-up) ───── -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-          // Find all elements with .fade-up
           var items = document.querySelectorAll(".fade-up");
           items.forEach(function(el, index) {
-            // Stagger by 150ms each
             setTimeout(function() {
               el.classList.add("visible");
             }, index * 150);

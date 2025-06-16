@@ -1,0 +1,56 @@
+﻿@model IEnumerable<SharedTravelBG.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Управление на потребителите";
+    
+}
+
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
+
+
+<h2>@ViewData["Title"]</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Име</th>
+            <th>Email</th>
+            <th>Телефон</th>
+            <th>Блокиран</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var u in Model)
+        {
+            bool isLocked = u.LockoutEnd.HasValue && u.LockoutEnd > DateTimeOffset.UtcNow;
+            <tr>
+                <td>@u.FullName</td>
+                <td>@u.Email</td>
+                <td>@u.PhoneNumber</td>
+                <td>@(isLocked ? "Да" : "Не")</td>
+                <td class="d-flex gap-2">
+                    @if (!isLocked)
+                    {
+                            <form asp-controller="Admin" asp-action="Ban" method="post">
+                                <input type="hidden" name="id" value="@u.Id" />
+                                <button type="submit" class="btn btn-warning btn-sm">Блокирай</button>
+                            </form>
+                    }
+                    else
+                    {
+                            <form asp-controller="Admin" asp-action="Unban" method="post">
+                                <input type="hidden" name="id" value="@u.Id" />
+                                <button type="submit" class="btn btn-success btn-sm">Разблокирай</button>
+                            </form>
+                    }
+                    <form asp-controller="Admin" asp-action="Delete" method="post"
+                          onsubmit="return confirm('Сигурни ли сте, че искате да изтриете този потребител?');">
+                        <input type="hidden" name="id" value="@u.Id" />
+                        <button type="submit" class="btn btn-danger btn-sm">Изтрий</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
