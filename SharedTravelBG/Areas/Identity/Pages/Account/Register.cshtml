@@ -1,7 +1,7 @@
 ﻿@page
 @model SharedTravelBG.Areas.Identity.Pages.Account.RegisterModel
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Регистрация";
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -9,35 +9,35 @@
 <form method="post">
     <input type="hidden" asp-for="ReturnUrl" />
     <div class="form-group">
-        <label asp-for="Input.FullName"></label>
+        <label asp-for="Input.FullName">Пълно име</label>
         <input asp-for="Input.FullName" class="form-control" />
         <span asp-validation-for="Input.FullName" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="Input.Email"></label>
+        <label asp-for="Input.Email">Имейл</label>
         <input asp-for="Input.Email" class="form-control" />
         <span asp-validation-for="Input.Email" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="Input.Password"></label>
+        <label asp-for="Input.Password">Парола</label>
         <input asp-for="Input.Password" class="form-control" id="Input_Password" />
         <span asp-validation-for="Input.Password" class="text-danger"></span>
         <!-- Help text that will pop up if the password doesn't meet the requirements -->
         <small id="passwordHelp" class="form-text text-danger" style="display:none;">
-            Password must be at least 6 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.
+            Паролата трябва да бъде поне 6 символа и да включва поне една главна буква, една малка буква, една цифра и един специален символ.
         </small>
     </div>
     <div class="form-group">
-        <label asp-for="Input.ConfirmPassword"></label>
+        <label asp-for="Input.ConfirmPassword">Потвърдете паролата</label>
         <input asp-for="Input.ConfirmPassword" class="form-control" />
         <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
     </div>
-    <button type="submit" class="btn btn-primary">Register</button>
+    <button type="submit" class="btn btn-primary">Регистрация</button>
 </form>
 
 <div>
     <p>
-        Already have an account? <a href="/Identity/Account/Login">Login</a>
+        Вече имате акаунт? <a href="/Identity/Account/Login">Вход</a>
     </p>
 </div>
 
