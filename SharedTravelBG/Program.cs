@@ -7,7 +7,12 @@ using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
 
+
 var builder = WebApplication.CreateBuilder(args);
+
+var supportedCultures = new[] { new CultureInfo("bg-BG") };
+
+
 
 // Retrieve the connection string from configuration.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -28,6 +33,12 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
 	options.SignIn.RequireConfirmedAccount = false;
+
+	// Enable lockout for all users
+	options.Lockout.AllowedForNewUsers = true;
+	// Just in case: you can tune the timespan
+	options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(3650);
+	options.Lockout.MaxFailedAccessAttempts = 5;
 })
 	.AddRoles<IdentityRole>()  // Enable role support
 	.AddEntityFrameworkStores<ApplicationDbContext>();
@@ -39,9 +50,7 @@ builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, CustomU
 // Add controllers with views.
 builder.Services.AddControllersWithViews(options =>
 {
-	// Add a global authorization policy if needed.
-	// var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
-	// options.Filters.Add(new AuthorizeFilter(policy));
+
 });
 
 builder.Services.AddRazorPages(options =>
