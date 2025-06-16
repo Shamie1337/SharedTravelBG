@@ -9,8 +9,6 @@
     var isAuthenticated = User.Identity.IsAuthenticated;
 }
 
-<link rel="stylesheet" href="~/css/site.css" />
-
 <!-- Hero Section for anonymous users -->
 @if (!isAuthenticated)
 {
@@ -21,15 +19,12 @@
         <p class="lead">Присъединете се, споделяйте и спестете разходи за гориво, докато пътувате из България.</p>
         <hr class="my-4" style="border-top: 2px solid rgba(0,0,0,0.3);" />
     </div>
-}
 
-<!-- Features Section for anonymous users -->
-@if (!isAuthenticated)
-{
-    <div class="flex-grow-1 d-flex flex-column justify-content-center">
+    <!-- Features Section for anonymous users -->
+    <div class="d-flex flex-column align-items-center py-5">
         <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm h-100 fade-up">
+            <div class="col-md-4 mb-4 fade-up">
+                <div class="card shadow-sm h-100">
                     <img src="/images/map.png" class="img-fluid" alt="Организирайте пътувания" />
                     <div class="card-body">
                         <h5 class="card-title">Организирайте пътувания</h5>
@@ -41,8 +36,8 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm h-100 fade-up">
+            <div class="col-md-4 mb-4 fade-up">
+                <div class="card shadow-sm h-100">
                     <img src="/images/people.jpeg" class="img-fluid" alt="Присъединете се към пътувания" />
                     <div class="card-body">
                         <h5 class="card-title">Присъединете се към пътувания</h5>
@@ -99,22 +94,22 @@ else
                            placeholder="Град" />
                 </div>
                 <div class="col-md-3">
-                    <label for="date" class="form-label">Дата</label>
-                    <input type="date"
+                    <input type="text"
                            id="date"
                            name="date"
                            value="@(ViewContext.HttpContext.Request.Query["date"])"
-                           class="form-control form-control-lg" />
+                           class="form-control form-control-lg flatpickr-bg"
+                           placeholder="дд.мм.гггг" />
                 </div>
                 <div class="col-md-3">
-                    <label for="minAvailableSpots" class="form-label">Мин. места</label>
+                    <label for="exactSpots" class="form-label">Точно места</label>
                     <input type="number"
-                           id="minAvailableSpots"
-                           name="minAvailableSpots"
+                           id="exactSpots"
+                           name="exactSpots"
                            min="1"
-                           value="@(ViewContext.HttpContext.Request.Query["minAvailableSpots"])"
+                           value="@(ViewContext.HttpContext.Request.Query["exactSpots"])"
                            class="form-control form-control-lg"
-                           placeholder="1+" />
+                           placeholder="брой места" />
                 </div>
                 <div class="col-md-6 d-grid">
                     <button type="submit" class="btn btn-primary btn-lg">
@@ -156,7 +151,7 @@ else
                                         <strong>Час:</strong>
                                         @{
                                             var dt1 = DateTime.Today.Add(trip.PlannedStartTime);
-                                            @dt1.ToString("hh:mm tt")
+                                            @dt1.ToString("HH:mm")
                                         }
                                     </p>
                                     <p class="card-text text-muted mb-1">
@@ -197,8 +192,6 @@ else
                         </div>
                     }
                 </div>
-                    
-                
             }
         }
 
@@ -223,18 +216,18 @@ else
                                     @trip.DepartureTown → @trip.DestinationTown
                                 </h5>
                                 <p class="card-text mb-1">
-                                    <strong>Дата:</strong> @trip.TripDate.ToString("MM/dd/yy")<br />
+                                    <strong>Дата:</strong> @trip.TripDate.ToString("dd.MM.yyyy")<br />
                                     <strong>Час:</strong>
                                     @{
                                         var dt2 = DateTime.Today.Add(trip.PlannedStartTime);
-                                        @dt2.ToString("hh:mm tt")
+                                        @dt2.ToString("HH:mm")
                                     }
                                 </p>
-                                <p class="card-text text-muted">
+                                <p class="card-text text-muted mb-1">
                                     <strong>Организатор:</strong>
                                     @trip.Organizer.FullName (@trip.Organizer.Email)
                                 </p>
-                                <p class="card-text">
+                                <p class="card-text mb-3">
                                     <strong>Оставащи места:</strong>
                                     @(trip.MaxParticipants - trip.Participants.Count)
                                 </p>
@@ -244,10 +237,12 @@ else
                                         <form asp-controller="Trips"
                                               asp-action="Join"
                                               asp-route-id="@trip.Id"
-                                              method="post">
+                                              method="post"
+                                              class="w-100">
                                             @Html.AntiForgeryToken()
-                                            <button type="submit"
-                                                    class="btn btn-primary w-100 btn-lg">Присъедини се</button>
+                                            <button type="submit" class="btn btn-primary w-100 btn-lg">
+                                                Присъедини се
+                                            </button>
                                         </form>
                                     }
                                     else
@@ -263,7 +258,20 @@ else
         }
     </div>
 }
- 
+
+@section Scripts {
+    <script>
+        flatpickr(".flatpickr-bg", {
+          locale: "bg",
+          altInput: true,            // show a prettier “alternative” field
+          altFormat: "d.m.Y",        // Bulgarian display format
+          dateFormat: "Y-m-d",       // ISO value format that model-binder will parse
+          allowInput: true,
+          defaultDate: "@ViewContext.HttpContext.Request.Query["date"]"
+        });
+    </script>
+}
+
 <!-- Register Button for anonymous users -->
 @if (!isAuthenticated)
 {

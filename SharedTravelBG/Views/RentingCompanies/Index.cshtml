@@ -1,25 +1,24 @@
 ﻿@model IEnumerable<SharedTravelBG.Models.RentingCompany>
 
 @{
-    ViewData["Title"] = "Renting Companies";
+    ViewData["Title"] = "Наемни компании";
 }
 
-<h1>Renting Companies</h1>
+<h1>Наемни компании</h1>
 
-<!-- Only show the Add button if the user is logged in and is in the Admin role -->
 @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
 {
     <p>
-        <a class="btn btn-primary" asp-action="Create">Add New Renting Company</a>
+        <a class="btn btn-primary" asp-action="Create">Добави нова компания за наем</a>
     </p>
 }
 
 <table class="table">
     <thead>
         <tr>
-            <th>Name</th>
-            <th>Address</th>
-            <th>Phone Number</th>
+            <th>Име</th>
+            <th>Адрес</th>
+            <th>Телефонен номер</th>
             <th></th>
         </tr>
     </thead>
@@ -31,11 +30,11 @@
                 <td>@company.Address</td>
                 <td>@company.PhoneNumber</td>
                 <td>
-                    <a asp-action="Details" asp-route-id="@company.Id">Details</a>
+                    <a asp-action="Details" asp-route-id="@company.Id">Подробности</a>
                     @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
                     {
-                     <a asp-action = "Edit" asp-route-id = "@company.Id" > Edit </a >
-                     <a asp-action = "Delete" asp-route-id = "@company.Id" > Delete </a >
+                        <a asp-action="Edit" asp-route-id="@company.Id">Редактирай</a>
+                        <a asp-action="Delete" asp-route-id="@company.Id">Изтрий</a>
                     }
                 </td>
             </tr>

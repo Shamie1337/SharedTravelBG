@@ -1,6 +1,7 @@
 ﻿@model IEnumerable<SharedTravelBG.Models.Trip>
+
 @{
-    ViewData["Title"] = "My Trips";
+    ViewData["Title"] = "Моите пътувания";
     var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 }
 
@@ -8,18 +9,18 @@
 
 @if (!Model.Any())
 {
-    <p>You haven’t joined any trips yet. <a asp-action="Index">Browse all trips</a>.</p>
+    <p>Все още не сте се присъединили към никои пътувания. <a asp-action="Index">Разгледайте всички пътувания</a>.</p>
 }
 else
 {
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Route</th>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Organizer</th>
-                <th>Spots</th>
+                <th>Маршрут</th>
+                <th>Дата</th>
+                <th>Час</th>
+                <th>Организатор</th>
+                <th>Свободни места</th>
                 <th></th>
             </tr>
         </thead>
@@ -36,12 +37,11 @@ else
                     <td>
                         <a class="btn btn-sm btn-info"
                            asp-action="Details"
-                           asp-route-id="@trip.Id">Details</a>
-
+                           asp-route-id="@trip.Id">Подробности</a>
                         <form asp-action="Leave" method="post" class="d-inline">
                             <input type="hidden" name="id" value="@trip.Id" />
                             <button type="submit" class="btn btn-sm btn-warning">
-                                Leave
+                                Напусни
                             </button>
                             @Html.AntiForgeryToken()
                         </form>

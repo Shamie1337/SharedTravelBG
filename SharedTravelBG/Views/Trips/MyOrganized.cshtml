@@ -1,26 +1,26 @@
 ﻿@model IEnumerable<SharedTravelBG.Models.Trip>
+
 @{
-    ViewData["Title"] = "Trips I Organized";
+    ViewData["Title"] = "Пътувания, които организирах";
 }
 
 <h1>@ViewData["Title"]</h1>
 
 @if (!Model.Any())
 {
-    <p>You haven’t organized any trips yet. <a asp-action="Create">Create one now.</a></p>
+    <p>Все още не сте организирали пътувания. <a asp-action="Create">Създайте едно сега.</a></p>
 }
 else
 {
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Route</th>
-                <th>Date</th>
+                <th>Маршрут</th>
+                <th>Дата</th>
                 <th></th>
-                <th>Time</th>
+                <th>Час</th>
                 <th></th>
-                <th>Participants</th>
-                
+                <th>Участници</th>
             </tr>
         </thead>
         <tbody>
@@ -28,15 +28,14 @@ else
             {
                 <tr>
                     <td>@trip.DepartureTown → @trip.DestinationTown</td>
-                    <td>@trip.TripDate.Date.ToString("MM/dd/yy")<td>      
-                    <td>@trip.PlannedStartTime.ToString(@"hh\:mm")<td>
-                    <td>@(trip.Participants?.Count ?? 0) / @trip.MaxParticipants</td>
-
-
-
+                    <td>@trip.TripDate.Date.ToString("MM/dd/yy")
                     <td>
-                        <a class="btn btn-sm btn-info" asp-action="Details" asp-route-id="@trip.Id">Details</a>
-                        <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-id="@trip.Id">Edit</a>
+                    <td>@trip.PlannedStartTime.ToString(@"hh\:mm")
+                    <td>
+                    <td>@(trip.Participants?.Count ?? 0) / @trip.MaxParticipants</td>
+                    <td>
+                        <a class="btn btn-sm btn-info" asp-action="Details" asp-route-id="@trip.Id">Подробности</a>
+                        <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-id="@trip.Id">Редактирай</a>
                     </td>
                 </tr>
             }

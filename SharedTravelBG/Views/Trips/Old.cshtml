@@ -1,11 +1,10 @@
 ﻿@model IEnumerable<SharedTravelBG.Models.Trip>
 
 @{
-    ViewData["Title"] = "Old Trips";
+    ViewData["Title"] = "Стари пътувания";
 }
 
-<h2>Old Trips</h2>
-
+<h2>@ViewData["Title"]</h2>
 
 @if (!Model.Any())
 {
@@ -39,7 +38,6 @@ else
                         <p class="card-text">
                             <strong>Участници:</strong> @trip.Participants.Count / @trip.MaxParticipants
                         </p>
-                        
                         <div class="mt-auto">
                             <a asp-action="Details"
                                asp-route-id="@trip.Id"

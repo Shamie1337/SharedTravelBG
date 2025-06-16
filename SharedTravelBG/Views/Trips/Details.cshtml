@@ -1,7 +1,7 @@
 ﻿@model SharedTravelBG.Models.Trip
 
 @{
-    ViewData["Title"] = "Trip Details";
+    ViewData["Title"] = "Подробности за пътуването";
 
     // Safely retrieve values from ViewBag (provide defaults if null)
     double organiserRating = ViewBag.OrganiserRating as double? ?? 0.0;
@@ -22,16 +22,16 @@
     var todayDateOnly = DateTime.Today;
 }
 
-<h1>Trip Details</h1>
+<h1>@ViewData["Title"]</h1>
 
 <div class="card mb-4">
     <div class="card-body">
-        <h4>@Model.DepartureTown to @Model.DestinationTown</h4>
+        <h4>@Model.DepartureTown → @Model.DestinationTown</h4>
         <p>
-            <strong>Date:</strong> @Model.TripDate.ToString("dd.MM.yyyy")
+            <strong>Дата:</strong> @Model.TripDate.ToString("dd.MM.yyyy")
         </p>
         <p>
-            <strong>Planned Start:</strong>
+            <strong>Планирано начало:</strong>
             @{
                 // Format TimeSpan as HH:mm
                 var time = Model.PlannedStartTime;
@@ -39,22 +39,22 @@
             }
         </p>
         <p>
-            <strong>Organizer's Name:</strong> @Model.Organizer?.FullName<br />
-            <strong>Organizer's Email:</strong> @Model.Organizer?.Email<br />
-            <strong>Organizer’s Overall Rating:</strong> @organiserRating.ToString("N1")
+            <strong>Име на организатора:</strong> @Model.Organizer?.FullName<br />
+            <strong>Имейл на организатора:</strong> @Model.Organizer?.Email<br />
+            <strong>Обща оценка на организатора:</strong> @organiserRating.ToString("N1")
             @if (reviewCount > 0)
             {
-                <span>(from @reviewCount reviews)</span>
+                <span>(от @reviewCount отзива)</span>
             }
         </p>
         <p>
-            <strong>Organizer Phone:</strong> @Model.OrganizerPhoneNumber
+            <strong>Телефон на организатора:</strong> @Model.OrganizerPhoneNumber
         </p>
         <p>
-            <strong>Available Spots:</strong> @availableSpots
+            <strong>Свободни места:</strong> @availableSpots
         </p>
         <p>
-            <strong>Participants:</strong> @(Model.Participants?.Count ?? 0) / @Model.MaxParticipants
+            <strong>Участници:</strong> @(Model.Participants?.Count ?? 0) / @Model.MaxParticipants
         </p>
     </div>
 </div>
@@ -71,7 +71,7 @@
                 <form asp-action="Join" method="post" class="d-inline">
                     <input type="hidden" name="id" value="@Model.Id" />
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="btn btn-success">Join</button>
+                    <button type="submit" class="btn btn-success">Присъедини се</button>
                 </form>
             }
             else if (isParticipant)
@@ -79,28 +79,28 @@
                 <form asp-action="Leave" method="post" class="d-inline">
                     <input type="hidden" name="id" value="@Model.Id" />
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="btn btn-warning">Leave</button>
+                    <button type="submit" class="btn btn-warning">Напусни</button>
                 </form>
             }
             else if (availableSpots == 0)
             {
-                <span class="text-danger">No spots available</span>
+                <span class="text-danger">Няма места</span>
             }
         }
         else
         {
             @* If the user is the organizer *@
-            <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
-            <a class="btn btn-danger" asp-action="Delete" asp-route-id="@Model.Id">Delete</a>
+            <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">Редактирай</a>
+            <a class="btn btn-danger" asp-action="Delete" asp-route-id="@Model.Id">Изтрий</a>
         }
     }
     else
     {
-        <span class="text-muted">This trip has already taken place.</span>
+        <span class="text-muted">Това пътуване вече се е състояло.</span>
     }
 </div>
 
 <div class="mt-3 d-flex gap-2">
-    <a class="btn btn-secondary" asp-action="Index">Back to Trips</a>
-    <a class="btn btn-outline-primary" asp-controller="Home" asp-action="Index">Back to Home</a>
+    <a class="btn btn-secondary" asp-action="Index">Обратно към пътуванията</a>
+    <a class="btn btn-outline-primary" asp-controller="Home" asp-action="Index">Обратно към началото</a>
 </div>

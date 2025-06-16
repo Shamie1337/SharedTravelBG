@@ -2,8 +2,21 @@
 
 @{
     ViewData["Title"] = "Trips";
-    // Get the current logged-in user's ID.
     string currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+    // Determine if any filter is applied
+    bool hasFilter = !string.IsNullOrEmpty((string)ViewData["departure"])
+                     || !string.IsNullOrEmpty((string)ViewData["destination"])
+                     || !string.IsNullOrEmpty((string)ViewData["date"])
+                     || !string.IsNullOrEmpty((string)ViewData["time"]);
+
+    // Format the time query value as HH:mm for the <input type="time">
+    string timeQuery = ViewData["time"] as string;
+    string formattedTimeValue = "";
+    if (!string.IsNullOrEmpty(timeQuery) && TimeSpan.TryParse(timeQuery, out var ts))
+    {
+        formattedTimeValue = ts.ToString(@"hh\:mm"); // 24-hour, zero-padded
+    }
 }
 
 @if (TempData["Message"] != null)
@@ -13,107 +26,186 @@
     </div>
 }
 
-<h1>Trips</h1>
+<h1 class="mb-4">Текущи пътувания</h1>
 
-<p>
-    <a class="btn btn-primary" asp-action="Create">Add New Trip</a>
+<p class="mb-4">
+    <a class="btn btn-primary" asp-action="Create">
+        <i class="bi bi-plus-lg me-1"></i>Добави ново пътуване
+    </a>
 </p>
 
 <form method="get" class="row g-2 mb-4">
     <div class="col-sm-2">
         <input type="text" name="departure" value="@ViewData["departure"]"
-               class="form-control" placeholder="From town…" />
+               class="form-control" placeholder="От град…" />
     </div>
     <div class="col-sm-2">
         <input type="text" name="destination" value="@ViewData["destination"]"
-               class="form-control" placeholder="To town…" />
+               class="form-control" placeholder="До град…" />
     </div>
     <div class="col-sm-2">
-        <input type="date" name="date" value="@ViewData["date"]"
+        <input type="text"
+               id="date"
+               name="date"
+               value="@(ViewContext.HttpContext.Request.Query["date"])"
+               class="form-control form-control-lg flatpickr-bg"
+               placeholder="дд.мм.гггг" />
+    </div>
+    <div class="col-sm-2">
+        <input type="time" name="time" value="@formattedTimeValue"
                class="form-control" />
     </div>
     <div class="col-sm-2">
-        <input type="time" name="time" value="@ViewData["time"]"
-               class="form-control" />
+        <button type="submit" class="btn btn-primary w-100">Филтрирай</button>
     </div>
     <div class="col-sm-2">
-        <button type="submit" class="btn btn-primary w-100">Filter</button>
-    </div>
-    <div class="col-sm-2">
-        <a asp-action="Index" class="btn btn-secondary w-100">Reset</a>
+        <a asp-action="Index" class="btn btn-secondary w-100">Нулирай</a>
     </div>
 </form>
 
 @if (!Model.Any())
 {
-    <div class="alert alert-warning">
-        Няма намерени пътувания, които да отговарят на зададените критерии.
+    @* Show specific message if filters applied *@
+    @if (hasFilter)
+    {
+        <div class="alert alert-warning">
+            Няма пътувания със зададените критерии.
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            В момента няма налични пътувания.
+        </div>
+    }
+}
+else
+{
+    <div class="accordion" id="tripsAccordion">
+        @for (int i = 0; i < Model.Count(); i++)
+        {
+            var trip = Model.ElementAt(i);
+            var occupiedSpots = trip.Participants?.Count ?? 0;
+            var availableSpots = trip.MaxParticipants - occupiedSpots;
+            var percentFilled = trip.MaxParticipants == 0
+            ? 0
+            : (int)Math.Round(100.0 * occupiedSpots / trip.MaxParticipants);
+            var isOrganizer = (trip.OrganizerId == currentUserId);
+            var isParticipant = trip.Participants?.Any(p => p.Id == currentUserId) ?? false;
+            var collapseId = $"collapseTrip{i}";
+            var headingId = $"headingTrip{i}";
+
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="@headingId">
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#@collapseId"
+                            aria-expanded="false"
+                            aria-controls="@collapseId">
+                        <div class="d-flex justify-content-between w-100">
+                            <span>
+                                <i class="bi bi-arrow-right-circle me-2"></i>
+                                @trip.DepartureTown → @trip.DestinationTown
+                            </span>
+                            <small class="text-muted">
+                                @trip.TripDate.ToString("dd.MM.yyyy")
+                                @trip.PlannedStartTime.ToString(@"hh\:mm")
+                            </small>
+                        </div>
+                    </button>
+                </h2>
+                <div id="@collapseId"
+                     class="accordion-collapse collapse"
+                     aria-labelledby="@headingId"
+                     data-bs-parent="#tripsAccordion">
+                    <div class="accordion-body">
+                        <p>
+                            <strong>Организатор:</strong> @trip.Organizer.FullName (@trip.Organizer.Email)<br />
+                            <strong>Телефон:</strong> @trip.OrganizerPhoneNumber
+                        </p>
+                        <p>
+                            <strong>Макс. участници:</strong> @trip.MaxParticipants<br />
+                            <strong>Заети места:</strong> @occupiedSpots<br />
+                            <strong>Свободни места:</strong> @availableSpots
+                        </p>
+                        <div class="mb-3">
+                            <div class="progress" style="height: 1rem;">
+                                <div class="progress-bar @(
+                                        percentFilled < 50 ? "bg-success" :
+                                        percentFilled < 80 ? "bg-warning" :
+                                                              "bg-danger")"
+                                     role="progressbar"
+                                     style="width: @percentFilled%">
+                                    @percentFilled%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            @if (isOrganizer)
+                            {
+                                <a class="btn btn-outline-primary btn-sm"
+                                   asp-action="Edit"
+                                   asp-route-id="@trip.Id">
+                                    <i class="bi bi-pencil"></i> Редактирай
+                                </a>
+                                <a class="btn btn-outline-danger btn-sm"
+                                   asp-action="Delete"
+                                   asp-route-id="@trip.Id">
+                                    <i class="bi bi-trash"></i> Изтрий
+                                </a>
+                            }
+                            else
+                            {
+                                @if (isParticipant)
+                                {
+                                    <form asp-action="Leave" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@trip.Id" />
+                                        <button type="submit" class="btn btn-warning btn-sm">
+                                            <i class="bi bi-box-arrow-left"></i> Напусни
+                                        </button>
+                                    </form>
+                                }
+                                else if (availableSpots > 0)
+                                {
+                                    <form asp-action="Join" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@trip.Id" />
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i class="bi bi-box-arrow-in-right"></i> Присъедини се
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Няма място</span>
+                                }
+                            }
+
+                            <a class="btn btn-info btn-sm"
+                               asp-controller="Trips"
+                               asp-action="Details"
+                               asp-route-id="@trip.Id">
+                                <i class="bi bi-info-circle"></i> Детайли
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 }
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Departure</th>
-            <th>Destination</th>
-            <th>Date</th>
-            <th>Start Time</th>
-            <th>Phone</th>
-            <th>Available Spots</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var trip in Model)
-        {
-            // Calculate available spots.
-            int availableSpots = trip.MaxParticipants - (trip.Participants?.Count ?? 0);
-            bool isOrganizer = (trip.OrganizerId == currentUserId);
-            bool isParticipant = trip.Participants != null && trip.Participants.Any(p => p.Id == currentUserId);
-            <tr>
-                <td>@trip.DepartureTown</td>
-                <td>@trip.DestinationTown</td>
-                <td>@trip.TripDate.ToShortDateString()</td>
-                <td>@trip.PlannedStartTime.ToString(@"hh\:mm")</td>
-                <td>@trip.OrganizerPhoneNumber</td>
-                <td>@availableSpots</td>
-                <td>
-                    <!-- Details button is always visible -->
-                    <a class="btn btn-info btn-sm"
-                       asp-controller="Trips"
-                       asp-action="Details"
-                       asp-route-id="@trip.Id">
-                        Details
-                    </a>
-
-                    @if (isOrganizer)
-                    {
-                     <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@trip.Id">Edit</a>
-                    <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@trip.Id">Delete</a>
-    }
-                    else
-                    {
-                    if (isParticipant)
-                    {
-                     <form asp-action="Leave" method="post" class="d-inline">
-                    <input type = "hidden" name="id" value="@trip.Id" />
-                    @Html.AntiForgeryToken()
-                    <button type = "submit" class="btn btn-warning btn-sm">Leave</button>
-                    </form>
-                    }
-                    else
-{
-                     <form asp-action = "Join" method = "post" class= "d-inline" >
-                    <input type="hidden" name="id" value="@trip.Id" />
-                    @Html.AntiForgeryToken()
-                    <button type="submit" class= "btn btn-success btn-sm" > Join </button >
-                    </form >
-                    }
-                    }
-            </td>
-        </tr>
-        }
-
-       
-    </tbody>
-</table>
+@section Scripts {
+    <script>
+        flatpickr(".flatpickr-bg", {
+          locale: "bg",
+          altInput: true,            // show a prettier “alternative” field
+          altFormat: "d.m.Y",        // Bulgarian display format
+          dateFormat: "Y-m-d",       // ISO value format that model-binder will parse
+          allowInput: true,
+          defaultDate: "@ViewContext.HttpContext.Request.Query["date"]"
+        });
+    </script>
+}
