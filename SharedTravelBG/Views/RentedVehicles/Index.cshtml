@@ -1,4 +1,5 @@
 ﻿@model IEnumerable<SharedTravelBG.Models.RentedVehicle>
+@using System.Globalization
 
 @{
     ViewData["Title"] = "Наеми";
@@ -16,7 +17,7 @@
         <tr>
             <th>Модел автомобил</th>
             <th>Телефон на наемателя</th>
-            <th>Цена/ден</th>
+            <th>Цена/ден (лв.)</th>
             <th>Регистрационен номер</th>
             <th>Цвят</th>
             <th>Действия</th>
@@ -28,7 +29,9 @@
             <tr>
                 <td>@rental.VehicleModel</td>
                 <td>@rental.RenterPhoneNumber</td>
-                <td>@rental.PricePerDay.ToString("C")</td>
+                <td>
+                    @(rental.PricePerDay.ToString("C", CultureInfo.GetCultureInfo("bg-BG")))
+                </td>
                 <td>@rental.LicensePlateNumber</td>
                 <td>@rental.Color</td>
                 <td>

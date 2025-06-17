@@ -2,35 +2,35 @@
 @using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
-    ViewData["Title"] = "Edit Review";
+    ViewData["Title"] = "Редактиране на отзив";
 }
 
-<h1>Edit Review</h1>
+<h1>Редактиране на отзив</h1>
 
 <form asp-action="Edit" method="post">
     <input type="hidden" asp-for="Id" />
     <div class="form-group">
-        <label asp-for="TripId" class="control-label">Trip</label>
+        <label asp-for="TripId" class="control-label">Пътуване</label>
         <select asp-for="TripId" class="form-control" asp-items="ViewBag.Trips">
-            <option value="">-- Select Trip --</option>
+            <option value="">-- Изберете пътуване --</option>
         </select>
         <span asp-validation-for="TripId" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="Content" class="control-label"></label>
+        <label asp-for="Content" class="control-label">Коментар</label>
         <textarea asp-for="Content" class="form-control"></textarea>
         <span asp-validation-for="Content" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="Rating" class="control-label"></label>
+        <label asp-for="Rating" class="control-label">Оценка</label>
         <input asp-for="Rating" class="form-control" type="number" min="1" max="5" />
         <span asp-validation-for="Rating" class="text-danger"></span>
     </div>
-    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <button type="submit" class="btn btn-primary">Запази промените</button>
 </form>
 
 <p>
-    <a class="btn btn-secondary" asp-action="Index">Back to Reviews List</a>
+    <a class="btn btn-secondary" asp-action="Index">Обратно към списъка с отзиви</a>
 </p>
 
 @section Scripts {

@@ -1,48 +1,48 @@
 ﻿@model SharedTravelBG.Models.Trip
 
 @{
-    ViewData["Title"] = "Edit Trip";
+    ViewData["Title"] = "Редактиране на пътуване";
 }
 
-<h1>Edit Trip</h1>
+<h1>Редактиране на пътуване</h1>
 
 <form asp-action="Edit" method="post">
     <input type="hidden" asp-for="Id" />
     <div class="form-group">
-        <label asp-for="DepartureTown" class="control-label"></label>
+        <label asp-for="DepartureTown" class="control-label">Град на отпътуване</label>
         <input asp-for="DepartureTown" class="form-control" />
         <span asp-validation-for="DepartureTown" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="DestinationTown" class="control-label"></label>
+        <label asp-for="DestinationTown" class="control-label">Град на пристигане</label>
         <input asp-for="DestinationTown" class="form-control" />
         <span asp-validation-for="DestinationTown" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="TripDate" class="control-label"></label>
+        <label asp-for="TripDate" class="control-label">Дата на пътуване</label>
         <input asp-for="TripDate" class="form-control" type="date" />
         <span asp-validation-for="TripDate" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="MaxParticipants" class="control-label"></label>
+        <label asp-for="MaxParticipants" class="control-label">Максимален брой участници</label>
         <input asp-for="MaxParticipants" class="form-control" type="number" />
         <span asp-validation-for="MaxParticipants" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="OrganizerPhoneNumber" class="control-label"></label>
-        <input asp-for="OrganizerPhoneNumber" class="form-control" placeholder="Enter phone number" />
+        <label asp-for="OrganizerPhoneNumber" class="control-label">Телефон на организатора</label>
+        <input asp-for="OrganizerPhoneNumber" class="form-control" placeholder="Въведете телефонен номер" />
         <span asp-validation-for="OrganizerPhoneNumber" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="PlannedStartTime" class="control-label"></label>
-        <input asp-for="PlannedStartTime" class="form-control" type="time />
+        <label asp-for="PlannedStartTime" class="control-label">Планирано време на заминаване</label>
+        <input asp-for="PlannedStartTime" class="form-control" type="time" />
         <span asp-validation-for="PlannedStartTime" class="text-danger"></span>
     </div>
-    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <button type="submit" class="btn btn-primary">Запази промените</button>
 </form>
 
 <div>
-    <a asp-action="Index" class="btn btn-secondary">Back to Trip List</a>
+    <a asp-action="Index" class="btn btn-secondary">Обратно към списъка с пътувания</a>
 </div>
 
 @section Scripts {

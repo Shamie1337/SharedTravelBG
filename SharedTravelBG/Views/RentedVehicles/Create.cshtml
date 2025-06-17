@@ -1,47 +1,47 @@
 ﻿@model SharedTravelBG.Models.RentedVehicle
 
 @{
-    ViewData["Title"] = "Add New Rental Vehicle";
+    ViewData["Title"] = "Добавяне на нов автомобил под наем";
 }
 
-<h1>Add New Rental Vehicle</h1>
+<h1>Добавяне на нов автомобил под наем</h1>
 
 <form asp-action="Create" method="post">
     <div class="form-group">
-        <label asp-for="VehicleModel" class="control-label"></label>
-        <input asp-for="VehicleModel" class="form-control" placeholder="Enter Vehicle Model" />
+        <label asp-for="VehicleModel" class="control-label">Модел автомобил</label>
+        <input asp-for="VehicleModel" class="form-control" placeholder="Въведете модел на автомобила" />
         <span asp-validation-for="VehicleModel" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="RenterPhoneNumber" class="control-label"></label>
-        <input asp-for="RenterPhoneNumber" class="form-control" placeholder="Enter your phone number" />
+        <label asp-for="RenterPhoneNumber" class="control-label">Телефон на наемателя</label>
+        <input asp-for="RenterPhoneNumber" class="form-control" placeholder="Въведете телефонен номер" />
         <span asp-validation-for="RenterPhoneNumber" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="PricePerDay" class="control-label"></label>
-        <input asp-for="PricePerDay" class="form-control" type="number" step="0.01" placeholder="Enter price per day" />
+        <label asp-for="PricePerDay" class="control-label">Цена на ден</label>
+        <input asp-for="PricePerDay" class="form-control" type="number" step="0.01" placeholder="Въведете цена на ден" />
         <span asp-validation-for="PricePerDay" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="LicensePlateNumber" class="control-label"></label>
-        <input asp-for="LicensePlateNumber" class="form-control" placeholder="Enter License Plate Number" />
+        <label asp-for="LicensePlateNumber" class="control-label">Регистрационен номер</label>
+        <input asp-for="LicensePlateNumber" class="form-control" placeholder="Въведете регистрационен номер" />
         <span asp-validation-for="LicensePlateNumber" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="Color" class="control-label"></label>
-        <input asp-for="Color" class="form-control" placeholder="Enter Car Color" />
+        <label asp-for="Color" class="control-label">Цвят</label>
+        <input asp-for="Color" class="form-control" placeholder="Въведете цвят на автомобила" />
         <span asp-validation-for="Color" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="Description" class="control-label"></label>
-        <textarea asp-for="Description" class="form-control" placeholder="Optional description"></textarea>
+        <label asp-for="Description" class="control-label">Описание</label>
+        <textarea asp-for="Description" class="form-control" placeholder="По избор описание"></textarea>
         <span asp-validation-for="Description" class="text-danger"></span>
     </div>
-    <button type="submit" class="btn btn-primary">Add Rental</button>
+    <button type="submit" class="btn btn-primary">Добави наем</button>
 </form>
 
 <p>
-    <a class="btn btn-secondary" asp-action="Index">Back to Rentals List</a>
+    <a class="btn btn-secondary" asp-action="Index">Обратно към списъка с наеми</a>
 </p>
 
 @section Scripts {
