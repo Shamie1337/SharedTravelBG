@@ -93,6 +93,13 @@
                                 <i class="bi bi-chat-dots-fill"></i> Отзиви
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link organizers-link"
+                               asp-controller="Trips"
+                               asp-action="BestOrganizers">
+                                <i class="bi bi-trophy-fill me-1"></i> Най-добри организатори
+                            </a>
+                        </li>
 
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle"
@@ -160,6 +167,13 @@
                                             Моите отзиви
                                         </a>
                                     </li>
+                                    
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Reviews" asp-action="ForMe">
+                                            Отзиви за мен
+                                        </a>
+                                        
+                                    </li>
                                     <li>
                                         <a class="dropdown-item" asp-controller="Home" asp-action="Profile">
                                             Моят профил
@@ -171,6 +185,7 @@
                                             Изход
                                         </a>
                                     </li>
+                                    
                                 </ul>
                             </li>
                         }

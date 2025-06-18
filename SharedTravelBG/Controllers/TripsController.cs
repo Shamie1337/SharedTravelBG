@@ -377,5 +377,53 @@ namespace SharedTravelBG.Controllers
 
 			return View(trip);
 		}
+
+
+
+
+
+
+		public async Task<IActionResult> BestOrganizers(int take = 5)
+		{
+			// 1) Group reviews by Trip.OrganizerId
+			var reviewStats = await _context.Reviews
+				.Where(r => r.Trip != null)  // ensure Trip navigation is loaded
+				.GroupBy(r => r.Trip.OrganizerId)
+				.Select(g => new
+				{
+					OrganizerId = g.Key,
+					AvgRating = Math.Round(g.Average(r => r.Rating), 2),
+					ReviewsCount = g.Count()
+				})
+				.OrderByDescending(x => x.AvgRating)
+				.ThenByDescending(x => x.ReviewsCount)
+				.Take(take)
+				.ToListAsync();
+
+			// 2) Load the corresponding users
+			var organizerIds = reviewStats.Select(x => x.OrganizerId).ToList();
+			var organizers = await _context.Users
+				.Where(u => organizerIds.Contains(u.Id))
+				.ToListAsync();
+
+			// 3) Build dictionaries for quick lookup in the view
+			ViewBag.AvgRatings = reviewStats.ToDictionary(x => x.OrganizerId, x => x.AvgRating);
+			ViewBag.ReviewCounts = reviewStats.ToDictionary(x => x.OrganizerId, x => x.ReviewsCount);
+
+			// 4) Pass the ApplicationUser list to the view
+			return View(organizers);
+		}
+
+		// Public as well
+		public async Task<IActionResult> ByOrganizer(string organizerId)
+		{
+			var trips = await _context.Trips
+				.Where(t => t.OrganizerId == organizerId && t.TripDate >= DateTime.Today)
+				.Include(t => t.Organizer)
+				.ToListAsync();
+
+			ViewBag.OrganizerName = (await _context.Users.FindAsync(organizerId))?.FullName;
+			return View(trips);
+		}
 	}
 }

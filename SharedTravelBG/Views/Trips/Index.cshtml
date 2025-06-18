@@ -201,9 +201,9 @@ else
     <script>
         flatpickr(".flatpickr-bg", {
           locale: "bg",
-          altInput: true,            // show a prettier “alternative” field
+          altInput: true,            
           altFormat: "d.m.Y",        // Bulgarian display format
-          dateFormat: "Y-m-d",       // ISO value format that model-binder will parse
+          dateFormat: "Y-m-d",      
           allowInput: true,
           defaultDate: "@ViewContext.HttpContext.Request.Query["date"]"
         });
